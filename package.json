@@ -15,7 +15,14 @@
     "new:session": "node scripts/new-session.mjs",
     "new:paper": "node scripts/new-paper.mjs",
     "new:member": "node scripts/new-member.mjs",
-    "init:group": "node scripts/init-group.mjs"
+    "init:group": "node scripts/init-group.mjs",
+    "verify": "node scripts/verify.mjs",
+    "verify:full": "node scripts/verify.mjs --build",
+    "list:members": "node scripts/list.mjs members",
+    "list:themes": "node scripts/list.mjs themes",
+    "list:sessions": "node scripts/list.mjs sessions",
+    "list:papers": "node scripts/list.mjs papers",
+    "list:concepts": "node scripts/list.mjs concepts"
   },
   "packageManager": "pnpm@10.33.0",
   "dependencies": {

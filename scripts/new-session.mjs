@@ -138,5 +138,10 @@ status: upcoming
 `;
 
 writeFileSync(outPath, content);
-console.log(`✓ Created ${outPath}`);
-console.log(`  Edit it, then commit: git add ${outPath}`);
+
+if (opts.json) {
+  process.stdout.write(JSON.stringify({ ok: true, action: 'create', file: outPath, slug, week, lead }) + '\n');
+} else {
+  console.log(`✓ Created ${outPath}`);
+  console.log(`  Edit it, then commit: git add ${outPath}`);
+}

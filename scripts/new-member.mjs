@@ -71,5 +71,9 @@ research-interests:
 `;
 
 writeFileSync(outPath, content);
-console.log(`✓ Created ${outPath}`);
-console.log(`  记得也在 src/content/docs/members/index.mdx 加入相应分组。`);
+if (opts.json) {
+  process.stdout.write(JSON.stringify({ ok: true, action: 'create', file: outPath, slug, role, year, cluster }) + '\n');
+} else {
+  console.log(`✓ Created ${outPath}`);
+  console.log(`  记得也在 src/content/docs/members/index.mdx 加入相应分组。`);
+}

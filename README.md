@@ -120,6 +120,46 @@ pnpm new:member zhangsan --role=博士生 --year=3 --cluster=研究主理人
 pnpm init:group "<新组名>" [--keep-demo]
 ```
 
+## 🤖 给 Agent / AI 维护者
+
+**这个模板天然适合让 AI agent（Claude / Cursor / Cascade 等）持续维护。** 入口都规整好了：
+
+```text
+AGENT_GUIDE.md       ← agent 第一次见仓库读这个
+.agent/
+  context/           ← repo-map、role-model、conventions（agent 长期记忆）
+  skills/            ← 10 个 skill：bootstrap-new-group / weekly-session /
+                       post-meeting-recap / add-member / add-paper-note /
+                       add-concept / refresh-theme / personalized-onboarding /
+                       weekly-digest / review-pr
+  templates/         ← session/paper/member/theme/concept 原始模板
+```
+
+agent 友好的工具命令（都支持 `--json` 输出）：
+
+```bash
+pnpm verify                       # frontmatter schema + 链接 + 命名约定 自检
+pnpm verify:full                  # 加跑 build
+pnpm list:members --json          # introspect 仓库当前状态
+pnpm list:sessions --since=7d --json
+pnpm list:papers --theme=long-context --json
+pnpm new:session ... --json       # 所有 new:* 都支持 --json，便于 agent 解析
+```
+
+**典型 agent 对话场景**：
+
+| 用户说 | agent 调用的 skill |
+|--------|---------------------|
+| "把这个模板初始化为 X 组用" | `bootstrap-new-group` |
+| "下周共读 X 论文，让 Y 带读" | `weekly-session` |
+| "周会刚结束，整理 transcript 到 session 页" | `post-meeting-recap` |
+| "新成员张三加入了" | `add-member` |
+| "我读完 X paper，做笔记" | `add-paper-note` |
+| "周日发 wiki 周报" | `weekly-digest` |
+| "review 这个 PR" | `review-pr` |
+
+详见 [`AGENT_GUIDE.md`](AGENT_GUIDE.md) 和 [`.agent/skills/README.md`](.agent/skills/README.md)。
+
 ## 部署
 
 ### 首次部署清单（务必检查）

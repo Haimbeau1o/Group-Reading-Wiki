@@ -98,4 +98,8 @@ status: draft
 `;
 
 writeFileSync(outPath, content);
-console.log(`✓ Created ${outPath}`);
+if (opts.json) {
+  process.stdout.write(JSON.stringify({ ok: true, action: 'create', file: outPath, slug, title, theme }) + '\n');
+} else {
+  console.log(`✓ Created ${outPath}`);
+}
