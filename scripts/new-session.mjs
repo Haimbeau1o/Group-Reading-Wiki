@@ -22,13 +22,17 @@ const [week, slug, ...rest] = args;
 const opts = Object.fromEntries(
   rest.filter(s => s.startsWith('--')).map(s => {
     const [k, ...v] = s.slice(2).split('=');
-    return [k, v.join('=')];
+    return [k, v.length ? v.join('=') : true];
   })
 );
 
 const lead = opts.lead || '<带读人>';
 const paperRef = opts.paper ? `\n  - /${opts.paper}/` : '';
 const today = new Date().toISOString().slice(0, 10);
+
+const yamlSafe = (s) => /[:#&*!|>%@`,\[\]{}"'\\]/.test(s) ? `"${String(s).replace(/"/g, '\\"')}"` : s;
+const titleY = yamlSafe(`${week} · ${slug}`);
+const descY = yamlSafe(`${week} 周会共读。带读人：${lead}。`);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const outPath = resolve(__dirname, '..', 'src/content/docs/sessions', `${week.toLowerCase()}-${slug}.md`);
@@ -41,10 +45,10 @@ if (existsSync(outPath)) {
 mkdirSync(dirname(outPath), { recursive: true });
 
 const content = `---
-title: ${week} · ${slug}
-description: ${week} 周会共读。带读人：${lead}。
+title: ${titleY}
+description: ${descY}
 sidebar:
-  label: ${week} · ${slug}
+  label: ${titleY}
 session_week: ${week}
 session_date: ${today}
 lead: ${lead}

@@ -21,11 +21,16 @@ const [slug, ...rest] = args;
 const opts = Object.fromEntries(
   rest.filter(s => s.startsWith('--')).map(s => {
     const [k, ...v] = s.slice(2).split('=');
-    return [k, v.join('=')];
+    return [k, v.length ? v.join('=') : true];
   })
 );
 const title = opts.title || slug;
 const theme = opts.theme || 'long-context';
+
+// YAML 安全引号：含特殊字符（: # 等）时必须加引号
+const yamlSafe = (s) => /[:#&*!|>%@`,\[\]{}"'\\]/.test(s) ? `"${String(s).replace(/"/g, '\\"')}"` : s;
+const titleY = yamlSafe(title);
+const descY = yamlSafe(`论文解读 · ${title}`);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const outPath = resolve(__dirname, '..', 'src/content/docs/papers', `${slug}.md`);
@@ -37,10 +42,10 @@ if (existsSync(outPath)) {
 mkdirSync(dirname(outPath), { recursive: true });
 
 const content = `---
-title: ${title}
-description: 论文解读 · ${title}
+title: ${titleY}
+description: ${descY}
 sidebar:
-  label: ${title}
+  label: ${titleY}
 themes:
   - ${theme}
 status: draft

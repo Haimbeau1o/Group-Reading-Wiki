@@ -93,7 +93,11 @@ if (opts.json) {
     if (it.year) extra.push(`year ${it.year}`);
     if (it.status && it.status !== 'active') extra.push(it.status);
     if (it.session_week) extra.push(it.session_week);
-    if (it.themes) extra.push(`themes: ${Array.isArray(it.themes) ? it.themes.join(',') : it.themes}`);
+    if (it.themes) {
+      const t = Array.isArray(it.themes) ? it.themes
+        : (typeof it.themes === 'object' ? Object.values(it.themes) : [it.themes]);
+      if (t.length) extra.push(`themes: ${t.join(',')}`);
+    }
     console.log(`  ${it.slug.padEnd(28)} ${it.path.padEnd(40)} ${extra.join(' · ')}`);
   }
 }

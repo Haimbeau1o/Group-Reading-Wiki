@@ -20,7 +20,7 @@ const [slug, ...rest] = args;
 const opts = Object.fromEntries(
   rest.filter(s => s.startsWith('--')).map(s => {
     const [k, ...v] = s.slice(2).split('=');
-    return [k, v.join('=')];
+    return [k, v.length ? v.join('=') : true];
   })
 );
 const role = opts.role || '博士生';

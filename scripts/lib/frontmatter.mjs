@@ -16,7 +16,15 @@ export function parseFrontmatter(filepath) {
     if (!line.trim() || line.trim().startsWith('#')) continue;
     // 列表项
     if (/^\s+-\s/.test(line)) {
-      if (currentList) currentList.push(line.replace(/^\s+-\s+/, '').trim());
+      const v = line.replace(/^\s+-\s+/, '').trim();
+      if (currentList) {
+        currentList.push(v);
+      } else if (currentKey && fm[currentKey] && typeof fm[currentKey] === 'object' && !Array.isArray(fm[currentKey]) && Object.keys(fm[currentKey]).length === 0) {
+        // 之前认为是嵌套对象，实际是 list — 转成 array
+        fm[currentKey] = [v];
+        currentList = fm[currentKey];
+        nestedKey = null;
+      }
       continue;
     }
     // 顶层 key: value
@@ -128,6 +136,7 @@ export function validateFrontmatter(fm, schema) {
 // 根据文件路径选 schema
 export function detectSchema(relpath) {
   if (relpath.includes('/members/') && !relpath.endsWith('/index.mdx') && !relpath.endsWith('/index.md')) return 'member';
+  if (relpath.includes('/sessions/digest/')) return 'generic';
   if (relpath.includes('/sessions/') && !relpath.endsWith('/index.mdx')) return 'session';
   if (relpath.includes('/papers/') && !relpath.endsWith('/index.md')) return 'paper';
   if (relpath.includes('/themes/') && !relpath.endsWith('/index.mdx')) return 'theme';

@@ -12,7 +12,7 @@
  *
  * 默认仅快速检查 (1-3)。加 --build 跑完整 build。
  */
-import { readdirSync, statSync, existsSync } from 'node:fs';
+import { readdirSync, statSync, existsSync, readFileSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
@@ -57,12 +57,29 @@ for (const f of files) {
     log('warn', rel, `文件名不规范（应小写+连字符）: ${base}`);
   }
   // 解析 frontmatter
-  let fm;
+  let fm, raw;
   try {
-    fm = parseFrontmatter(f).frontmatter;
+    const parsed = parseFrontmatter(f);
+    fm = parsed.frontmatter;
   } catch (e) {
     log('error', rel, `frontmatter 解析失败: ${e.message}`);
     continue;
+  }
+  // YAML 健康检查：title / description 含 ':' 但没引号会让 Astro YAML parser 失败
+  raw = readFileSync(f, 'utf-8');
+  const fmMatch = raw.match(/^---\n([\s\S]*?)\n---/);
+  if (fmMatch) {
+    for (const line of fmMatch[1].split('\n')) {
+      // top-level scalar，含一个以上 ':' 但没用引号包住值
+      const m = line.match(/^(title|description|label):\s*(.+)$/);
+      if (m) {
+        const v = m[2].trim();
+        if (!v.startsWith('"') && !v.startsWith("'") && (v.match(/:/g) || []).length >= 1 && !/^[\d\w-]+$/.test(v.split(':')[0])) {
+          // value 含 ':' 且未加引号 → Astro YAML 大概率会 fail
+          log('error', rel, `frontmatter ${m[1]} 含 ':' 但未加引号 → 必须改成 ${m[1]}: "${v}"`);
+        }
+      }
+    }
   }
   // 选 schema 校验
   const schemaName = detectSchema(rel);
@@ -75,10 +92,9 @@ for (const f of files) {
 }
 
 // ── 2. 跨页链接 ────────────────────────────────────────────
-import { readFileSync } from 'node:fs';
 const LINK_RE = /\]\((\/[^)\s#]+?)\/?(?:#[^)]*)?\)/g;
 
-const ignoredPrefixes = ['/docs-assets/', '/_astro/', '/pagefind/', '/static/'];
+const ignoredPrefixes = ['/docs-assets/', '/_astro/', '/pagefind/', '/static/', '/.agent/', '/.github/'];
 
 for (const f of files) {
   const rel = relative(ROOT, f);
