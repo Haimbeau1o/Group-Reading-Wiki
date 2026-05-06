@@ -1,0 +1,90 @@
+/* AI 论文共读中心 — 主题定制 */
+
+:root {
+  --sl-font: 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --sl-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+}
+
+/* 暖色 / 学术风强调色（DeepSeek 蓝 + 学术米色基调） */
+:root {
+  --sl-color-accent-low: #11324d;
+  --sl-color-accent: #4f7cff;
+  --sl-color-accent-high: #c5d6ff;
+}
+:root[data-theme='light'] {
+  --sl-color-accent-low: #d6e2ff;
+  --sl-color-accent: #2356d6;
+  --sl-color-accent-high: #0c2a66;
+}
+
+/* 文档正文里的图片不要拉太大 */
+.sl-markdown-content img {
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin: 1.5rem auto;
+  max-width: 100%;
+}
+
+/* 让首页 CardGrid 更紧凑一点 */
+.sl-markdown-content .card {
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.sl-markdown-content .card:hover {
+  transform: translateY(-2px);
+  border-color: var(--sl-color-accent);
+}
+
+/* ─────────────── KaTeX 数学公式排版 ─────────────── */
+
+/* 块级公式：溢出时横向滚动而不是撑破布局；增加上下间距 */
+.sl-markdown-content .katex-display {
+  margin: 1.25rem 0;
+  padding: 0.5rem 0.25rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* 让 katex-display 内的实际公式仍然居中（overflow 容器宽度不足时左对齐） */
+.sl-markdown-content .katex-display > .katex {
+  display: inline-block;
+  text-align: initial;
+  white-space: nowrap;
+}
+
+/* 行内公式与正文字号协调 */
+.sl-markdown-content .katex {
+  font-size: 1.05em;
+}
+
+/* 表格 / 列表里的行内公式不要撑高行高 */
+.sl-markdown-content li .katex,
+.sl-markdown-content td .katex {
+  font-size: 1em;
+}
+
+/* 暗色模式下让公式颜色跟着正文走（KaTeX 默认会继承，但保险起见声明一下） */
+:root[data-theme='dark'] .sl-markdown-content .katex {
+  color: var(--sl-color-text);
+}
+
+/* 滚动条美化（仅 webkit） */
+.sl-markdown-content .katex-display::-webkit-scrollbar {
+  height: 6px;
+}
+.sl-markdown-content .katex-display::-webkit-scrollbar-thumb {
+  background: var(--sl-color-gray-5);
+  border-radius: 3px;
+}
+
+/* 论坛/共读 banner 横条 */
+.community-banner {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0 2rem;
+  border-left: 4px solid var(--sl-color-accent);
+  background: var(--sl-color-bg-nav);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}

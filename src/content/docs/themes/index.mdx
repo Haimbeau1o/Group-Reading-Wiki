@@ -1,0 +1,50 @@
+---
+title: 研究主线
+description: Leon's Group 关心的研究方向地图 —— 我们做什么、不做什么、为什么。
+sidebar:
+  order: 0
+  label: 主线总览
+---
+
+> **这一页给谁看**：新人 30 分钟看完 = 知道组里在干嘛。协作者点进来 = 30 秒判断要不要谈。Leon 自己写 grant 时 = 现成 background。
+
+我们组目前关心 **4 条研究主线**。每条主线下有：
+
+- **一句话定位** —— 我们关心什么，不关心什么
+- **关键论文** —— 外部代表作（链向我们的解读）
+- **我们的工作** —— 组内已发表 / 在投 / 在做
+- **开放问题** —— 还没想清楚的，邀请大家一起琢磨
+- **推荐阅读路径** —— 给想入门这条主线的新人
+
+## 当前主线
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <LinkCard
+    title="🪟 长上下文效率"
+    description="百万 token 级别推理的注意力 / KV cache / 调度优化"
+    href="/themes/long-context/"
+  />
+  <LinkCard
+    title="🧬 MoE 与稀疏化"
+    description="专家路由、负载均衡、稀疏激活的训练与推理"
+    href="/themes/moe-sparsity/"
+  />
+  <LinkCard
+    title="🧠 Test-time Reasoning"
+    description="推理时计算扩展：长 CoT、self-consistency、RL-based reasoning"
+    href="/themes/test-time-reasoning/"
+  />
+  <LinkCard
+    title="👁️ 多模态"
+    description="视觉-语言对齐、视觉 token 压缩、视觉原语推理"
+    href="/themes/multimodal/"
+  />
+</CardGrid>
+
+## 每条主线如何演化
+
+主线**不是固定的**。一条主线如果 6 个月没人写新内容、没人产出，会被标记为"休眠"；新生主线（比如最近半年涌现的方向）由 Leon 或资深成员发起。
+
+变更通过 PR 修改本页，由 PI 决议。

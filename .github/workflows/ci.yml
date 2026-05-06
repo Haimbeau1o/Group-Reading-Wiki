@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# 取消同分支上正在跑的过期 build
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Check links (broken anchors / missing pages)
+        run: |
+          # 简单的本地链接自检：所有 href="/..." 是否在 dist/ 里有对应文件
+          # 仅作为告警，不阻塞 CI
+          set +e
+          fail=0
+          for href in $(grep -rhoE 'href="/[^"#?]*"' dist/ | sort -u | sed 's/href="\(.*\)"/\1/'); do
+            [[ "$href" == "/" ]] && continue
+            [[ "$href" == /docs-assets/* ]] && continue
+            [[ "$href" == /pagefind/* ]] && continue
+            [[ "$href" == /_astro/* ]] && continue
+            [[ "$href" == *.xml ]] && continue
+            [[ "$href" == *.svg ]] && continue
+            target="dist${href%/}/index.html"
+            [[ ! -f "$target" && ! -f "dist${href}" ]] && echo "⚠ broken link: $href" && fail=1
+          done
+          exit 0
+        shell: bash

@@ -1,0 +1,61 @@
+---
+title: 共读会议（Sessions）
+description: Leon's Group 每周一篇论文共读，会前 / 会中 / 会后全流程都在这。
+sidebar:
+  order: 0
+  label: Sessions 总览
+---
+
+import { LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+> 每个 **Session** 是一次周会的完整记录：**会前** pre-read 问题、**会中** live notes、**会后** 关键 insights + action items。
+
+## 🎯 这一周
+
+<CardGrid>
+  <LinkCard
+    title="📅 2026-W18 · DeepSeek-V4 长上下文架构"
+    description="带读人：PhD-Senior-1（占位） · 周一 14:00–15:30"
+    href="/sessions/2026-w18-deepseek-v4/"
+  />
+</CardGrid>
+
+> 💡 **本周参与者请**：
+> 1. 周日前在 session 页底下抛 1 个 pre-read 问题（"我看不懂这一段"也是好问题）
+> 2. 周一会议结束后在自己 [/members/](/members/) reading log 写 100 字短评
+> 3. 带读人：周二补完会议纪要
+
+## 📜 历史归档
+
+按月份归档（占位 —— 实际只有这一周）：
+
+### 2026 年 5 月
+
+- [W18 · DeepSeek-V4 长上下文架构](/sessions/2026-w18-deepseek-v4/) ⭐本周
+
+### 历史共读
+
+> 占位。组里之前的共读如有保留材料，可以**反向迁入** —— 创建对应 session 页 + 手动填会议纪要。让 wiki 有"组的历史"感。
+
+---
+
+## Session 页结构说明
+
+每个 session 页有四段：
+
+1. **会议元信息**：时间、带读人、主 paper 链接、参与者
+2. **Pre-read**：会前阅读材料 + 1–3 个引导问题
+3. **Live notes**：会中讨论的关键点（带读人 / 记录员实时记）
+4. **Post-meeting**：会后整理的 key insights + action items + 链向相关 paper page / 内部项目
+
+模板见 `@/scripts/new-session.sh`（`pnpm new:session`），自动生成。
+
+---
+
+## 排程规则
+
+- **周一上午** PI / Postdoc 选下周共读 paper（参考 [研究主线](/themes/) 的开放问题）
+- **周三**之前确定带读人 + 创建 session 页（运行 `pnpm new:session 2026-W19 paper-slug`）
+- **周日**之前所有人在 session 页留 pre-read 问题
+- **周一**周会
+- **周二**带读人补完会议纪要

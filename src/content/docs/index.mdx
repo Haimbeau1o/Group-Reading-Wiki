@@ -1,0 +1,93 @@
+---
+title: Leon's Group · 课题组共读 Wiki
+description: 课题组共享大脑 —— 一起读论文、一起做笔记、一起把研究记忆沉淀下来。
+template: splash
+hero:
+  tagline: 课题组共享大脑：把每一次共读、每一条 idea、每一段踩坑记忆，变成全组可检索的知识。
+  actions:
+    - text: 🎯 我是新人 / Onboarding
+      link: /onboarding/
+      icon: right-arrow
+      variant: primary
+    - text: 看研究主线
+      link: /themes/
+      icon: open-book
+    - text: 看成员
+      link: /members/
+      icon: seti:default
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## 📅 本周共读
+
+<LinkCard
+  title="🐋 W18 · DeepSeek-V4 长上下文架构"
+  description="周一 14:00 · 带读人 PhD-Senior-1 · 周日前在 session 页留 pre-read 问题"
+  href="/sessions/2026-w18-deepseek-v4/"
+/>
+
+## 这里是什么？
+
+**Leon's Group 的内部知识中枢**。我们用它做四件事：
+
+<CardGrid>
+  <Card title="📚 一起读论文" icon="open-book">
+    每周一篇，带读人在 [共读笔记](#共读笔记) 留下解读；其他人在评论区追问、补充。读后的笔记是**带署名的、活的文档**，不是丢失在群聊里的截图。
+  </Card>
+  <Card title="🧭 沉淀研究主线" icon="seti:plan">
+    [研究主线](/themes/) 是组的研究地图：我们关心什么、做过什么、还有哪些开放问题。新人 30 分钟看完就知道组在干嘛。
+  </Card>
+  <Card title="👥 看见彼此在想什么" icon="seti:default">
+    每个 [成员](/members/) 有自己的笔记区。读到一半的想法、半成品 idea、踩过的坑 —— 写下来全组可见，错过协作机会的概率大幅下降。
+  </Card>
+  <Card title="🎯 给新人最低成本入门" icon="rocket">
+    [新人入口](/onboarding/) 列好"第一周读什么、第一月做什么、三个月做什么"。Leon 不必再口头介绍 100 遍。
+  </Card>
+</CardGrid>
+
+## 当前共读
+
+<CardGrid>
+  <LinkCard
+    title="🐋 DeepSeek 专题"
+    description="V4 长上下文架构、混合注意力、视觉原语 —— 我们组的第一组共读笔记"
+    href="/deepseek/overview/"
+  />
+  <LinkCard
+    title="📖 概念词典"
+    description="MoE / MLA / MTP / FP8 / GRPO —— 带组内立场的术语手册"
+    href="/concepts/"
+  />
+  <LinkCard
+    title="📜 论文索引"
+    description="按主题整理的论文阅读清单（持续更新）"
+    href="/papers/"
+  />
+  <LinkCard
+    title="🛠️ 如何贡献"
+    description="写笔记、提名论文、改概念词典 —— 各种贡献力度都欢迎"
+    href="/how-to-contribute/"
+  />
+</CardGrid>
+
+## 给不同角色的入口
+
+<CardGrid>
+  <Card title="🎓 大导师 / 小导师" icon="approve-check">
+    在 [研究主线](/themes/) 留观点；在 paper 评论区抛 take；偶尔写一条 research-log 给学生看方向。**写作成本低、权重高**。
+  </Card>
+  <Card title="🧑‍� 博士生" icon="pencil">
+    带读 → 写完整 paper 解读；自己 [research-log](/members/) 持续更新；带师弟时把反复回答的问题写成 wiki。**这里是你的学术 track record**。
+  </Card>
+  <Card title="📘 硕士生 / 新生" icon="seti:notebook">
+    从 [Onboarding](/onboarding/) 开始；学懂一个概念就给 [词典](/concepts/) 加一条；周会后写 100 字短评。**短评一样是贡献**。
+  </Card>
+  <Card title="🌐 访客 / 合作者" icon="external">
+    看 [研究主线](/themes/)、[共读笔记](/deepseek/overview/) 和 [概念词典](/concepts/) 即可了解我们组在做什么。这是组的"公开门面"。
+  </Card>
+</CardGrid>
+
+---
+
+> 还不熟悉？建议从 [新人入口](/onboarding/) 开始，按推荐路径走一遍。

@@ -1,0 +1,37 @@
+name: 🐛 内容错误 / 站点 bug
+description: 文章里写错了，或者站点哪里坏了
+title: "[bug] <一句话描述>"
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: 类型
+      options:
+        - 文章内容错误（事实 / 公式 / 引用）
+        - 错别字 / 翻译问题
+        - 站点 bug（页面加载失败、样式错乱等）
+        - 链接失效
+    validations:
+      required: true
+
+  - type: input
+    id: page
+    attributes:
+      label: 出问题的页面 URL
+      placeholder: https://group-reading-wiki.pages.dev/deepseek/v4-research/
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 错在哪、应该是什么、有没有出处
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 你建议怎么改（可选）
