@@ -114,8 +114,11 @@ console.log(`   site-url:    ${SITE_URL}${USING_PLACEHOLDER_SITE ? '  (placehold
 console.log(`   keep-demo: ${KEEP_DEMO}, keep-members: ${KEEP_MEMBERS}, dry-run: ${DRY_RUN}\n`);
 
 // 1. 全局文本替换 ────────────────────────────────────
+// 安全守卫：如果用户的组名本身含 "Leon"（例如 "Leonard's Lab"），
+// 则跳过单词 "Leon" → "<PI>" 的最后一公里替换，避免误伤刚写入的组名。
+const NAME_CONTAINS_LEON = /\bLeon\b/i.test(NEW_NAME);
 const NAME_REPLACEMENTS = [
-  // 组名
+  // 组名（最先，确保 "Leon's Group" 先被吃掉）
   ["Leon's Group", NEW_NAME],
   ["leon-group-wiki", slugify(NEW_NAME) + '-wiki'],
   // 原 GitHub repo URL（所有形式）
@@ -333,6 +336,30 @@ if (!KEEP_DEMO) {
 // 5.7. 中和 giscus 配置（repoId / categoryId 是原模板 repo 的，用户必须重配）
 //      保留结构但注释掉，让 setup:comments wizard（或用户手工）填入
 sanitizeAstroGiscus();
+
+// 5.8. "最后一公里" Leon 残留清理 ──────────────────
+// NAME_REPLACEMENTS 吃掉 "Leon's Group" 后，还有单独 "Leon" 作为 PI 角色名
+// 出现在几处硬编码文案里（index hero、pi.md 建议结构、onboarding 示例）。
+// 放在所有 rewrite 之后，确保 pi.md 已 rename + 重写完成。
+// 用纯文本 "PI"（不加尖括号）避免 .mdx 文件把 <PI> 当 JSX 组件解析崩。
+// 不包括 exemplar paper notes（防止破坏写好的 demo 专业解读里的合理引用）。
+if (!NAME_CONTAINS_LEON) {
+  const LEON_SOLO_FILES = [
+    'src/content/docs/index.mdx',
+    'src/content/docs/members/pi.md',
+    'src/content/docs/onboarding.md',
+  ];
+  for (const rel of LEON_SOLO_FILES) {
+    const p = join(ROOT, rel);
+    if (!existsSync(p)) continue;
+    const before = readFileSync(p, 'utf-8');
+    const after = before.replace(/\bLeon\b/g, 'PI');
+    if (after !== before) {
+      if (!DRY_RUN) writeFileSync(p, after);
+      log(`🧹 stripped standalone "Leon" → "PI" in ${rel}`);
+    }
+  }
+}
 
 // 6. 修改首页 hero ──────────────────────────────────
 const indexMdx = join(ROOT, 'src/content/docs/index.mdx');
