@@ -106,6 +106,8 @@ export const SCHEMAS = {
   },
   paper: {
     required: ['title', 'description'],
+    optional: ['status', 'themes', 'exemplar'],
+    // exemplar: true → init:group --reset 时保留（作为"好 paper note"的样板）
   },
   theme: {
     required: ['title', 'description'],
