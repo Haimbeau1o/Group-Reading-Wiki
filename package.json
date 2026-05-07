@@ -15,6 +15,7 @@
     "new:session": "node scripts/new-session.mjs",
     "new:paper": "node scripts/new-paper.mjs",
     "new:member": "node scripts/new-member.mjs",
+    "new:theme": "node scripts/new-theme.mjs",
     "init:group": "node scripts/init-group.mjs",
     "smoke-test:fork": "node scripts/smoke-test-fork.mjs",
     "verify": "node scripts/verify.mjs",
