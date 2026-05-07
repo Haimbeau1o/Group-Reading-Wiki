@@ -5,13 +5,13 @@
 用户说类似：
 
 - "把这个模板初始化为我们 X 组用"
-- "fork 完了，帮我重塑成 Y 组的 wiki"
+- "用 template 创建了仓库，帮我重塑成 Y 组的 wiki"
 - "我们组叫 Z，开始建 wiki"
 - "remove the Leon's Group demo content"
 
 ## 前置检查
 
-1. 确认仓库是 fork 状态：`git remote -v` 应该指向用户自己的 GitHub 仓库
+1. 确认仓库为用户独立仓库：`git remote -v` 应该指向用户自己（不是 Haimbeau1o/Group-Reading-Wiki）
 2. 确认仓库当前是 demo 状态（包含 "Leon's Group"）：`grep -l "Leon's Group" README.md`
 3. 确认依赖已装：`ls node_modules` 存在；不存在则跑 `pnpm install`
 
@@ -25,9 +25,11 @@
 |------|------|------|
 | ✓ | 课题组显示名 | `"Wang's NLP Group"` `"清华大模型小组"` |
 | ✓ | PI 名（英文 / GitHub username 优先） | `wang-prof` `rchen` |
-| | PI 邮箱 | `wang@example.edu` |
-| | 是否保留 demo 内容 | 默认清空，可选 `--keep-demo` 保留 DeepSeek 解读和概念词典作参考 |
-| | 是否保留 15 个成员占位框架 | 默认清空到 1 个 PI 模板，可选 `--keep-members` |
+| ✓ | GitHub 仓库（owner/repo） | `wang-lab/wang-nlp-wiki`。可从 `git remote -v` 自动读 |
+|    | 站点 URL（Cloudflare Pages 地址） | `https://wang-nlp.pages.dev`。不知道就先用占位，后面填 |
+|    | PI 邮箱 | `wang@example.edu` |
+|    | 是否保留 demo 内容 | 默认清空，可选 `--keep-demo` |
+|    | 是否保留 15 个成员占位框架 | 默认清空到 1 个 PI 模板，可选 `--keep-members` |
 
 ## 执行步骤
 
@@ -38,13 +40,19 @@
 2. **跑 dry-run 给用户预览**：
 
 ```bash
-pnpm init:group "<group display name>" --dry-run
+pnpm init:group "<group display name>" \
+  --github=<owner/repo> \
+  --site-url=<https://...pages.dev> \
+  --dry-run
 ```
 
-3. 用户确认后跑真实执行：
+3. 用户确认后跑真实执行（省略 `--dry-run`）：
 
 ```bash
-pnpm init:group "<group display name>" [--keep-demo] [--keep-members]
+pnpm init:group "<group display name>" \
+  --github=<owner/repo> \
+  --site-url=<https://...pages.dev> \
+  [--keep-demo] [--keep-members]
 ```
 
 4. **跑 verify**：
@@ -79,7 +87,7 @@ pnpm verify
 用户：把这个模板初始化为我们 Wang's NLP Group 用。
 agent：好。我先检查一下…
 
-  ✓ 是 fork 状态
+  ✓ 已是用户独立仓库（从 template 创建）
   ✓ 当前是 demo 状态（含 Leon's Group）
   ✓ 依赖已装
 
@@ -132,4 +140,4 @@ agent：（编辑 src/content/docs/index.mdx 移除该链接）✓
 
 - ❌ **不自动 git commit / push** —— 这是大改动，用户应该看一遍 git diff
 - ❌ 不修改 `LICENSE`
-- ❌ 不动用户 fork 的远程地址（`git remote`）
+- ❌ 不动用户仓库的远程地址（`git remote`）

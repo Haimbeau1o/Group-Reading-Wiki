@@ -22,7 +22,7 @@
 **Group Reading Wiki** is a reusable wiki template **purpose-built for AI / ML research labs**. It bundles weekly reading sessions, paper notes, research themes, onboarding, and group memory consolidation into a single Git-native product, with a unique twist:
 
 - 🤖 **Agent-native** — long-term maintenance can be **handed entirely to AI agents** (Claude / Cursor / Cascade). Ships with 10 skills, 3 long-term context files, and machine-readable `verify` / `list` / scaffold CLIs.
-- 🧬 **Fork → one command to rebrand** — `pnpm init:group "Your Group"` clears demo content and rebrands the entire site in 30 seconds.
+- 🧬 **Use this template → one command to rebrand** — click the green **Use this template** button on GitHub, then `pnpm init:group "Your Group"` clears demo content and rebrands the entire site in 30 seconds.
 - 📚 **Academic-writing friendly** — KaTeX math, Mermaid diagrams, cross-term hyperlinks, paper citation conventions, full-text search (with CJK support) — all out of the box.
 - 🌐 **Public / Private layering** — themes and paper notes go public to attract collaborators; personal reading logs and internal playbooks stay behind Cloudflare Access.
 - 🪶 **Static site, free hosting** — Astro + Cloudflare Pages, zero server cost, build artifact < 5MB.
@@ -85,19 +85,32 @@ pnpm dev          # → http://localhost:4321
 
 ### For lab leads adopting this template
 
+```text
+🌟 Click the green “Use this template” button at the top of this repo → Create a
+   new repository. The created repo is your independent project — no upstream
+   link to this template (by design; see docs/UPGRADING.md for syncing later).
+```
+
 ```bash
-# 1. Fork this repo on GitHub
-# 2. Clone locally
-git clone https://github.com/<your-org>/<your-repo>
-cd <your-repo>
+# 1. Clone the new repo you just created
+git clone https://github.com/<your-org>/<your-new-repo>
+cd <your-new-repo>
 pnpm install
 
-# 3. One-shot rebrand (clears Leon demo, replaces brand)
-pnpm init:group "Your Group Name"
+# 2. One-shot rebrand (clears demo, rebrands, fills GitHub / site URL)
+pnpm init:group "Your Group Name" \
+  --github=<your-org>/<your-new-repo> \
+  --site-url=https://your-site.pages.dev
 
-# 4. Run it
-pnpm dev
+# 3. Run it
+pnpm dev          # → http://localhost:4321
+pnpm verify       # must pass with 0 warnings
+
+# 4. Commit your initial state
+git commit -am "init: <Your Group> wiki"
 ```
+
+Worried about missing template updates later? Read [docs/UPGRADING.md](docs/UPGRADING.md).
 
 ### For AI agents / maintainers
 
@@ -304,8 +317,8 @@ All compatible. GitHub Pages requires `base: '/<repo>/'` in `astro.config.mjs`.
 Whether you're a research lab using the template, a developer improving it, or an AI agent — contributions welcome.
 
 - Bug reports / usage questions: [New Issue](https://github.com/Haimbeau1o/Group-Reading-Wiki/issues/new/choose)
-- Improving the template: see [CONTRIBUTING.md](CONTRIBUTING.md)
-- Forked it for your group: add "Based on [Group-Reading-Wiki](https://github.com/Haimbeau1o/Group-Reading-Wiki)" to your fork's README so other groups can find it
+- Improving the template: please use a **traditional fork** (not "Use this template") and open a PR — see [CONTRIBUTING.md](CONTRIBUTING.md)
+- Using it for your group: add "Based on [Group-Reading-Wiki](https://github.com/Haimbeau1o/Group-Reading-Wiki)" to your README so other groups can find it
 
 ## 📜 License
 

@@ -1,7 +1,7 @@
 {
   "name": "group-wiki-template",
   "version": "0.2.0",
-  "description": "可复用的课题组共读 Wiki 模板（AI / 大模型方向友好）。Fork 后 pnpm init:group 一键改为你的组。当前内置 Leon's Group 作为 live demo。",
+  "description": "可复用的课题组共读 Wiki 模板（AI / 大模型方向友好）。GitHub 点 Use this template 后 pnpm init:group 一键改为你的组。当前内置 Leon's Group 作为 live demo。",
   "type": "module",
   "private": true,
   "engines": {

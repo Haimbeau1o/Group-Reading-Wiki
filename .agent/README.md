@@ -5,7 +5,7 @@
 ```
 .agent/
 ├── README.md                ← 你正在读（目录索引）
-├── MAINTAINER_PLAYBOOK.md   ← 🔥 fork 后 agent 第一篇必读
+├── MAINTAINER_PLAYBOOK.md   ← 🔥 新仓库 agent 第一篇必读
 ├── context/                 ← agent 进仓库后的额外背景
 │   ├── repo-map.md
 │   ├── role-model.md

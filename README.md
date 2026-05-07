@@ -24,7 +24,7 @@
 **Group Reading Wiki** 是一个**面向 AI / 大模型研究组**的可复用 wiki 模板。它把"周会共读、论文笔记、研究主线、新人 onboarding、组内记忆沉淀"全部整合在一个 Git 原生的产品里，并且：
 
 - 🤖 **Agent-native** — 后续维护可以**完全交给 AI agent**（Claude / Cursor / Cascade 等）。内置 10 份 skill、3 份 long-term context、机器可读的 verify / list / scaffold CLI。
-- 🧬 **Fork → 一键改组名** — `pnpm init:group "Your Group"` 自动清空 demo 内容、替换品牌，30 秒变成你组的 wiki。
+- 🧬 **Use this template → 一键改组名** — GitHub 顶栏点绿色 **Use this template** 按钮 → `pnpm init:group "Your Group"` 自动清空 demo、替换品牌，30 秒变成你组的 wiki。
 - 📚 **学术写作友好** — KaTeX 公式、Mermaid 图、跨术语链接、论文出处规范、中文全文搜索，开箱即用。
 - 🌐 **公开 / 私域分层** — 主线、论文解读对外公开吸引合作；个人 reading log、internal playbook 用 Cloudflare Access 锁住。
 - 🪶 **静态站点 + 免费部署** — Astro + Cloudflare Pages，0 服务器成本，构建产物 < 5MB。
@@ -87,21 +87,32 @@ pnpm dev          # → http://localhost:4321
 
 ### 给"你想用它建自己组 wiki"的人
 
-```bash
-# 1. Fork 本仓库到你的 GitHub
-# 2. clone 到本地
-git clone https://github.com/<your-org>/<your-repo>
-cd <your-repo>
-pnpm install
-
-# 3. 一键重塑为你的课题组（清空 demo 内容、替换品牌）
-pnpm init:group "Your Group Name"
-
-# 4. 起来看
-pnpm dev
+```text
+🌟 点顶栏绿色 「Use this template」 按钮 → Create a new repository
+   └ 合你心意的仓库名，请勾选 Include all branches，复制后的仓库
+     是你的独立项目，和模板仓库没有 upstream 关联。
 ```
 
-详细：[Quick Start 完整流程 →](#部署)
+```bash
+# 1. clone 你刚创建的新仓库
+git clone https://github.com/<your-org>/<your-new-repo>
+cd <your-new-repo>
+pnpm install
+
+# 2. 一键重塑为你的课题组（清空 demo、替换品牌、含 GitHub / site URL）
+pnpm init:group "Your Group Name" \
+  --github=<your-org>/<your-new-repo> \
+  --site-url=https://your-site.pages.dev
+
+# 3. 起来看
+pnpm dev          # → http://localhost:4321
+pnpm verify       # 必须 0 warning 才算干净
+
+# 4. commit 你的初始状态
+git commit -am "init: <Your Group> wiki"
+```
+
+担心以后没法同步模板的改进？读 [docs/UPGRADING.md](docs/UPGRADING.md) — 讲了"骨架 vs 内容"边界和升级命令。
 
 ### 给"AI agent / 维护者"的人
 
@@ -305,11 +316,11 @@ pnpm new:member <slug> --role=博士生 --year=3 --json
 
 ## 🤝 贡献
 
-无论你是用模板的研究组、想 PR 改进模板的开发者、还是 AI agent，都欢迎贡献。
+无论你是用模板的研究组、想改进模板的开发者、还是 AI agent，都欢迎贡献。
 
 - 用法 / Bug 反馈：[New Issue](https://github.com/Haimbeau1o/Group-Reading-Wiki/issues/new/choose)
-- 改进模板：见 [CONTRIBUTING.md](CONTRIBUTING.md)
-- Fork 并用在你课题组：在你 fork 的 README 加一句 "Based on [Group-Reading-Wiki](https://github.com/Haimbeau1o/Group-Reading-Wiki)" 让其他组找到
+- 改进模板：请用**传统 fork**（非 Use this template）后开 PR，详见 [CONTRIBUTING.md](CONTRIBUTING.md)
+- 用在你课题组：在你的 README 加一句 "Based on [Group-Reading-Wiki](https://github.com/Haimbeau1o/Group-Reading-Wiki)" 让其他组找到
 
 ## 📜 协议
 

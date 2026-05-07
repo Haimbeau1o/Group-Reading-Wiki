@@ -1,25 +1,34 @@
 #!/usr/bin/env node
 /**
- * Fork 后一键把 Leon's Group demo 重塑为你课题组的初始 wiki。
+ * 用 GitHub Template 创建新仓库后，一键把 demo 重塑为你课题组的初始 wiki。
  *
  * 用法：
- *   pnpm init:group "Wang's NLP Group"               # 标准：清空 demo 内容
- *   pnpm init:group "Wang's NLP Group" --keep-demo   # 保留 DeepSeek 解读 + 5 概念词典作参考
- *   pnpm init:group "Wang's NLP Group" --keep-members  # 保留 15 个成员占位框架
- *   pnpm init:group "Wang's NLP Group" --dry-run     # 仅列出会改/删的文件，不动手
+ *   pnpm init:group "Wang's NLP Group"
+ *   pnpm init:group "Wang's NLP Group" --github=wang-lab/wang-nlp-wiki
+ *   pnpm init:group "Wang's NLP Group" --github=wang-lab/wang-nlp-wiki \
+ *                                      --site-url=https://wang-nlp.pages.dev
+ *   pnpm init:group "Wang's NLP Group" --keep-demo      # 保留 DeepSeek 解读
+ *   pnpm init:group "Wang's NLP Group" --keep-members   # 保留 15 成员占位
+ *   pnpm init:group "Wang's NLP Group" --dry-run        # 仅打印，不动手
+ *
+ * --github=owner/repo  若未给：自动读 git remote origin；读不到用占位符
+ * --site-url=URL        若未给：用占位 https://YOUR-SITE.pages.dev
  *
  * 这个脚本会：
- *   1. 把所有出现的 "Leon's Group" 替换为你的组名
- *   2. 删除 15 个成员占位文件（默认保留 leon.md，重命名为 pi.md 模板）
- *   3. 清空 4 条 demo 主线，保留 1 个空白模板
- *   4. 删除 sessions 示例
- *   5. 默认删除 deepseek/ 全套解读（除非 --keep-demo）
- *   6. 重置 README 顶部为 "<新组名>" 的 wiki 介绍
- *   7. 自我删除（执行完成后从 scripts/ 中删去 init-group.mjs，避免误用）
+ *   1. 把所有 "Leon's Group" / 原 GitHub URL / 原 site URL 替换为你的
+ *   2. 清 astro.config.mjs 的 title / description / social / editLink /
+ *      giscus 为你的或占位（giscus 需 pnpm setup:comments 后续填）
+ *   3. 删除 15 成员占位（默认保留 leon.md → 重命名为 pi.md 模板）
+ *   4. 清空 4 条 demo 主线，留一个 example-theme.md 模板
+ *   5. 删除 sessions 示例（保留 exemplar 标记的）
+ *   6. 默认删除 deepseek/ 全套（除非 --keep-demo）
+ *   7. 重置 README 顶部为你的组名
+ *   8. 自我删除（执行完删掉本脚本 + package.json 的 init:group 命令）
  *
- * 已经完整的项目（已 fork 用过本脚本的）不应再次运行。
+ * 已经 init 过的项目不应再次运行。
  */
 import { readFileSync, writeFileSync, rmSync, existsSync, readdirSync, renameSync, unlinkSync, statSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseFrontmatter } from './lib/frontmatter.mjs';
@@ -29,10 +38,15 @@ const ROOT = resolve(__dirname, '..');
 
 const args = process.argv.slice(2);
 const positional = args.filter(a => !a.startsWith('--'));
-const flags = new Set(args.filter(a => a.startsWith('--')));
+const flagsRaw = args.filter(a => a.startsWith('--'));
+const flags = new Set(flagsRaw.filter(a => !a.includes('=')));
+const kvFlags = Object.fromEntries(
+  flagsRaw.filter(a => a.includes('='))
+    .map(a => { const [k, ...v] = a.slice(2).split('='); return [k, v.join('=')]; })
+);
 
 if (positional.length < 1) {
-  console.error('Usage: pnpm init:group "<New Group Name>" [--keep-demo] [--keep-members] [--dry-run]');
+  console.error('Usage: pnpm init:group "<Group Name>" [--github=owner/repo] [--site-url=URL] [--keep-demo] [--keep-members] [--dry-run]');
   process.exit(1);
 }
 
@@ -40,6 +54,23 @@ const NEW_NAME = positional[0];
 const KEEP_DEMO = flags.has('--keep-demo');
 const KEEP_MEMBERS = flags.has('--keep-members');
 const DRY_RUN = flags.has('--dry-run');
+
+// ── GitHub 仓库与站点 URL：CLI > git remote > 占位符 ─────────
+const GITHUB_REPO = kvFlags['github'] || detectGithubOriginRepo() || 'YOUR_GITHUB_OWNER/YOUR_REPO';
+const GITHUB_URL = `https://github.com/${GITHUB_REPO}`;
+const SITE_URL = kvFlags['site-url'] || 'https://YOUR-SITE.pages.dev';
+const USING_PLACEHOLDER_GITHUB = GITHUB_REPO === 'YOUR_GITHUB_OWNER/YOUR_REPO';
+const USING_PLACEHOLDER_SITE = SITE_URL === 'https://YOUR-SITE.pages.dev';
+
+function detectGithubOriginRepo() {
+  try {
+    const out = execSync('git remote get-url origin', { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    // 匹配 https://github.com/owner/repo(.git) 或 git@github.com:owner/repo(.git)
+    const m = out.match(/github\.com[/:]([^/]+)\/([^/.]+?)(?:\.git)?$/);
+    if (m && m[1] !== 'Haimbeau1o') return `${m[1]}/${m[2]}`;
+    return null;
+  } catch { return null; }
+}
 
 const log = (m) => console.log(DRY_RUN ? `[dry-run] ${m}` : m);
 
@@ -78,12 +109,20 @@ const walkFiles = (dir, filter = () => true) => {
 };
 
 console.log(`\n🚀 Initializing group: "${NEW_NAME}"`);
+console.log(`   github:      ${GITHUB_REPO}${USING_PLACEHOLDER_GITHUB ? '  (placeholder — edit later)' : ''}`);
+console.log(`   site-url:    ${SITE_URL}${USING_PLACEHOLDER_SITE ? '  (placeholder — edit later)' : ''}`);
 console.log(`   keep-demo: ${KEEP_DEMO}, keep-members: ${KEEP_MEMBERS}, dry-run: ${DRY_RUN}\n`);
 
 // 1. 全局文本替换 ────────────────────────────────────
 const NAME_REPLACEMENTS = [
+  // 组名
   ["Leon's Group", NEW_NAME],
   ["leon-group-wiki", slugify(NEW_NAME) + '-wiki'],
+  // 原 GitHub repo URL（所有形式）
+  ['https://github.com/Haimbeau1o/Group-Reading-Wiki', GITHUB_URL],
+  ['Haimbeau1o/Group-Reading-Wiki', GITHUB_REPO],
+  // 原站点 URL
+  ['https://group-reading-wiki.pages.dev', SITE_URL],
 ];
 
 const allTextFiles = [
@@ -286,10 +325,14 @@ if (!KEEP_DEMO) {
   sanitizeAstroSidebar();
 
   // 5.6. 扫描保留页，去除 / 改写 demo-specific 链和段落
-  //      这是 fork-safe 的关键：让保留的 welcome/onboarding/roadmap 等
+  //      这是 template-safe 的关键：让保留的 welcome/onboarding/roadmap 等
   //      不再谈 Leon's Group 的 DeepSeek 专题 / 具体主线 / 具体成员
   sanitizeDemoLinks();
 }
+
+// 5.7. 中和 giscus 配置（repoId / categoryId 是原模板 repo 的，用户必须重配）
+//      保留结构但注释掉，让 setup:comments wizard（或用户手工）填入
+sanitizeAstroGiscus();
 
 // 6. 修改首页 hero ──────────────────────────────────
 const indexMdx = join(ROOT, 'src/content/docs/index.mdx');
@@ -313,7 +356,8 @@ const newReadme = `# ${NEW_NAME} · 共读 Wiki
 
 > 课题组共享大脑：共读、笔记、研究记忆、新人入口。
 >
-> 基于 [group-wiki-template](https://github.com/Haimbeau1o/Group-Reading-Wiki)（替换为模板原仓库链接）。
+> 基于 [group-wiki-template](https://github.com/Haimbeau1o/Group-Reading-Wiki) 构建。
+> 想同步模板的最新改进？见 [\`docs/UPGRADING.md\`](docs/UPGRADING.md)。
 
 ## 本地开发
 
@@ -321,6 +365,7 @@ const newReadme = `# ${NEW_NAME} · 共读 Wiki
 pnpm install
 pnpm dev          # http://localhost:4321
 pnpm build        # 静态产物到 dist/
+pnpm verify       # 校验 frontmatter / 链接，必须 0 warning
 \`\`\`
 
 ## 脚手架
@@ -333,7 +378,11 @@ pnpm new:member <slug> --role=<大导师|小导师|博士生|硕士生>
 
 ## 部署
 
-详见模板原仓库 README 的"部署"小节（推荐 Cloudflare Pages + Cloudflare Access）。
+推荐 Cloudflare Pages（0 服务器成本，全球 CDN）。部署步骤见 \`docs/UPGRADING.md\` 或模板原仓库 README 的"部署"小节。
+
+## Agent 维护
+
+想让 AI agent 帮你日常维护这个 wiki？先读 [\`.agent/MAINTAINER_PLAYBOOK.md\`](.agent/MAINTAINER_PLAYBOOK.md)。
 
 ## 协议
 
@@ -357,11 +406,56 @@ log(`🗑 self-removed: scripts/init-group.mjs (and package.json:scripts.init:gr
 
 console.log(`\n✅ Done. Your group's wiki is initialized: "${NEW_NAME}"`);
 console.log(`   Next:`);
-console.log(`     1. pnpm dev → 看一下当前样子`);
-console.log(`     2. 编辑 src/content/docs/members/pi.md 填 PI 信息`);
-console.log(`     3. 复制 src/content/docs/themes/example-theme.md 为你的主线`);
-console.log(`     4. pnpm new:member <你> --role=博士生 创建第一个成员`);
-console.log(`     5. git commit -am "init: ${NEW_NAME} wiki"`);
+console.log(`     1. pnpm verify → 应 0 error 0 warning`);
+console.log(`     2. pnpm dev → 看一下当前样子（http://localhost:4321）`);
+console.log(`     3. 编辑 src/content/docs/members/pi.md 填 PI 信息`);
+console.log(`     4. 复制 src/content/docs/themes/example-theme.md 为你的主线`);
+console.log(`     5. pnpm new:member <你> --role=博士生 创建第一个成员`);
+console.log(`     6. git commit -am "init: ${NEW_NAME} wiki"`);
+
+if (USING_PLACEHOLDER_GITHUB || USING_PLACEHOLDER_SITE) {
+  console.log(`\n⚠️  检测到占位符，下面几处需要你手工改为真实值：`);
+  if (USING_PLACEHOLDER_GITHUB) {
+    console.log(`\n   GITHUB URL（当前=YOUR_GITHUB_OWNER/YOUR_REPO）：`);
+    console.log(`     grep -r 'YOUR_GITHUB_OWNER/YOUR_REPO' src/ astro.config.mjs README.md`);
+  }
+  if (USING_PLACEHOLDER_SITE) {
+    console.log(`\n   SITE URL（当前=YOUR-SITE.pages.dev）：`);
+    console.log(`     astro.config.mjs 的 \`site\` 字段，决定 OG 标签和 canonical`);
+  }
+  console.log(`\n   或重跑：pnpm init:group "<Group>" --github=... --site-url=...`);
+}
+console.log(`\n📌 评论区（giscus）：默认已注释占位。想启用参见 docs/UPGRADING.md 的"评论区"段或 pnpm setup:comments（TODO）。`);
+console.log(`📚 从模板升级骨架：docs/UPGRADING.md\n`);
+
+/**
+ * 中和 astro.config.mjs 的 giscus 块：把模板仓库的 repoId / categoryId 换成占位，
+ * 并在上方加 TODO 注释，让用户清楚需要手工填。
+ * 这样即使用户不部署，运行 build 也不会因 giscus 报错（插件设计对空 id 宽容）。
+ */
+function sanitizeAstroGiscus() {
+  const p = join(ROOT, 'astro.config.mjs');
+  if (!existsSync(p)) return;
+  let content = readFileSync(p, 'utf-8');
+  const before = content;
+
+  // 把具体的 repoId / categoryId 换成占位（不匹配真实 repo，giscus 会静默失败）
+  content = content.replace(/repoId:\s*'R_[^']+'/,    "repoId: 'REPLACE_ME_WITH_YOUR_REPO_ID'");
+  content = content.replace(/categoryId:\s*'DIC_[^']+'/, "categoryId: 'REPLACE_ME_WITH_YOUR_CATEGORY_ID'");
+
+  // 在 giscus({ 上方加 TODO 提示（如果还没加）
+  if (!content.includes('TODO(setup:comments)')) {
+    content = content.replace(
+      /(\s+plugins:\s*\[\s*\n)(\s+)giscus\(\{/,
+      `$1$2// TODO(setup:comments): 替换 repoId / categoryId 为你仓库的（详见 docs/UPGRADING.md）\n$2giscus({`
+    );
+  }
+
+  if (content !== before) {
+    if (!DRY_RUN) writeFileSync(p, content);
+    log(`✏ sanitized astro.config.mjs (giscus repoId / categoryId placeholdered)`);
+  }
+}
 
 /**
  * 从 astro.config.mjs 删除 DeepSeek 专题 sidebar group。

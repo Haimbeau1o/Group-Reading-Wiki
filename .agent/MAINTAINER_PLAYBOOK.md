@@ -1,6 +1,6 @@
 # Maintainer Playbook（给 agent 看）
 
-> **新 PI fork 这个仓库后，他的 agent 应该首先读的文档**。
+> **新 PI 用 GitHub template 创建新仓库后，他的 agent 应该首先读的文档**。
 >
 > 这是一个 **agent-to-agent handoff** —— 上一个 agent（开发模板的我们）把使用方式教给下一个 agent（你 PI 的 agent）。
 
@@ -54,7 +54,7 @@ pnpm list:concepts --json
 | 主线 refresh | `refresh-theme` | [`.agent/skills/refresh-theme.md`](skills/refresh-theme.md) |
 | 个性化 onboarding | `personalized-onboarding` | [`.agent/skills/personalized-onboarding.md`](skills/personalized-onboarding.md) |
 | review PR | `review-pr` | [`.agent/skills/review-pr.md`](skills/review-pr.md) |
-| Fork 后初始化 | `bootstrap-new-group` | [`.agent/skills/bootstrap-new-group.md`](skills/bootstrap-new-group.md) |
+| 用 template 后初始化 | `bootstrap-new-group` | [`.agent/skills/bootstrap-new-group.md`](skills/bootstrap-new-group.md) |
 
 每个 skill 顶部有"何时调用 / 输入清单 / 检查点 / Lessons learned"。**先读 Lessons learned**。
 

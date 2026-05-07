@@ -6,7 +6,7 @@ sidebar:
 ---
 
 :::note[这是一个模板 demo]
-你正在看到的 **Leon's Group** 是一个**虚构课题组示例**，用来演示这个 [课题组共读 Wiki 模板](https://github.com/Haimbeau1o/Group-Reading-Wiki) 长什么样。如果你是其他课题组的人想用：fork 仓库 → `pnpm init:group "<你的组名>"` → 一键改成你的。详见仓库 README。
+你正在看到的 **Leon's Group** 是一个**虚构课题组示例**，用来演示这个 [课题组共读 Wiki 模板](https://github.com/Haimbeau1o/Group-Reading-Wiki) 长什么样。想用在你自己组：点仓库顶栏绿色 **Use this template** 按钮 → `pnpm init:group "<你的组名>"` → 一键改成你的。详见仓库 README。
 :::
 
 > **一句话**：把每一篇硬核 AI 论文 + 每一次周会讨论 + 每一段研究记忆，沉淀为全组可检索的"共享大脑"。
