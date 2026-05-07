@@ -277,48 +277,86 @@ content:
 
 ### Agent 开场白
 
-> "我们写第一篇真实 paper note 作为 wiki 的'示范'。内置的 DeepSeek-R1 是我留给你看的样板（来自模板的 exemplar），但你需要自己组的一篇。
+> "我们写第一篇真实 paper note 作为 wiki 的'示范'。内置的 DeepSeek-R1 是我留给你看的样板，但你需要自己组的一篇。
 >
-> 给我一篇你最近想让组里读的 paper 的 **arXiv ID**（例 `2401.02954`）。"
+> 给我一篇你最近想让组里读的 paper 的 **arXiv ID**（例 `2401.02954`）。有 lead 中意的人带读么？没也可以，默认 PI 作者。"
 
-### Agent 收到 arXiv ID 后
+### 这个循环完全委托给 add-paper-note skill
+
+详细读论文 + 起草笔记的完整流程在 [`add-paper-note.md`](add-paper-note.md)。包括：
+
+- Keshav 三遍阅读法（第一遍 5C · 第二遍 细读 · 第三遍 虚拟复现）
+- 批判性阅读 5 个追问（problem clarity / novelty / evidence / limitation / generalization）
+- Agent 起草范围：元信息 / 一句话总结 / 关键贡献 / 方法框架 / Counter-evidence / 复现性
+- Agent 不写范围：我们组为什么读 / take 段
+- 所有起草都加 `:::caution[🤖 Agent 起草 · 待 review]:::` banner
+- review 契约：删 banner + status: draft → published
+
+本循环只负责：
 
 ```bash
-# 1. 创建笔记骨架
-pnpm new:paper <slug> --arxiv=<id> --theme=<上一步建的主线 slug>
-# 这会自动从 arXiv 抓 title / authors / abstract 填入
+# 1. 调用 new:paper 带 --arxiv（自动抓元数据 + 起草多段 + 加 caution）
+pnpm new:paper <slug> \
+  --arxiv=<id> \
+  --theme=<循环 2 的主线 slug> \
+  --lead=<循环 3 加的某成员 slug>
 ```
 
-### Agent 接下来的动作
+抓到后：agent **走 add-paper-note 的 4 个前置检查**（slug 唯一 / 主线匹配 / 已有同主题 / 网络可达）+ Keshav 第一遍阅读填元信息 。
 
-1. **读抓回来的 abstract**，问 PI："这篇核心 contribution 你觉得是什么？2-3 句话。"
-2. **方法部分**：问 PI："这篇方法图最关键的一张是哪张？告诉我图号 + 一句解释，我去抓那张图。"
-3. **"我们组的 take"**：这是模板的灵魂段。Agent 问 PI 4 个引导问题：
-   - 这工作**最值得我们组学**的点是什么？
-   - 它**有什么明显限制**或者你不同意的地方？
-   - 如果让我们组**复现 / 扩展**，会先做什么？
-   - 这工作**联到我们哪条主线**？
-4. **批判性段落**：把 PI 的 4 个回答写成 3-4 段对话式文字，不是 bullet list
+### 主线-paper 不匹配 surface（必走口话）
 
-### 关键：质量 gate
+Agent 读完 abstract 后动手填主线之前，必须告诉 PI 匹配判断：
 
-不要让"我们组的 take"段成为：
-- ❌ "这是一篇关于 X 的论文" — 这是 abstract，不是 take
-- ❌ 5 个 bullet "优点 1-5" — 这不是观点
-- ✅ "这篇最有意思的是 X，但它绕开了 Y，我觉得我们组应该做 Z" — 这才是 take
+- 🟢 paper 核心问题 = 循环 2 主线核心问题 → 直接挂
+- 🟡 paper 某一节触及主线（不是主菜） → 挂，但在元信息注 “以 X 节 为接点”
+- 🔴 paper 与现有主线均偏 → **不默认挂主线**，问 PI 选：(a) 不挂 (b) 起一条新主线后挂 (c) 重选一篇攲合主线的 paper
+
+这个与循环 2 的 "PI 宣言 vs 主线 一致性检查" 是姊妹设计。
+
+### Take 段的处理（中间档）
+
+红线：**Agent 不自动为 take 段生成最终内容**。但允许三种路径：
+
+- **(首选)** PI / lead 当场口述起 PEEL 结构的立场（Point-Evidence-Explanation-Link） → agent 记载。
+- **(中间档)** PI 二次坚决说"你写" → agent 起草 + 加 prominent caution + frontmatter status: draft 锁住，明说"本付变不算稿"。
+- **(退路)** PI / lead 不现场写 → take 段保留为 5 个引导问题的 caution 块，等他们下周填。
+
+### Agent 代写 中间档的标准格式
+
+```markdown
+## 我们组的 take
+
+:::caution[🤖 Agent 起草 · 待 <lead> review]
+下面这段是 agent 从 abstract + 主线背景**起草**的初稿，**未经 PI 修订前不算正式 take**。
+请 PI / 带读人删改后把本 caution 块去掉 + `status: draft` 改为 `published`。
+:::
+
+[Agent 起草 PEEL 结构的 1-3 段，不动上面 caution。]
+
+> ☝️ 上面是 agent 起草。PI / 带读人**必须**修订或重写后删 caution 块。
+```
+
+### 创建第一个 session
+
+```bash
+pnpm new:session 2026-W<xx> <paper-slug> --lead=<member-slug> --paper=<paper-slug>
+```
+
+### 质量 gate
+
+不要让 take 段成为：
+
+- ❌ "这是一篇关于 X 的论文" —— 这是 abstract，不是 take
+- ❌ 5 个 bullet "优点 1-5" —— 这不是观点
+- ✅ "这篇最有意思的是 X，但它绕开了 Y，我觉得我们组应该做 Z" —— 这才是 take
 
 参考 `src/content/docs/papers/deepseek-r1.md` 的 take 段写法。
 
-### 关联到主线
+### 关联到主线（手动）
 
 ```bash
-# 编辑循环 2 建的主线，把这篇加到"必读论文"或"近期讨论"段
-```
-
-### 创建第一个 session 页（顺手）
-
-```bash
-pnpm new:session 2026-W<xx> <paper-slug> --lead=<某成员>
+# 编辑循环 2 建的主线，把这篇加到"关键论文（外部）"段
 ```
 
 ### 更新 group.config.yaml
@@ -331,9 +369,12 @@ content:
 
 ### 检查点
 
-- ✅ `/papers/<slug>/` 显示真实笔记，"我们组的 take" 段非空
-- ✅ 主线页引用了这篇论文
+- ✅ `/papers/<slug>/` 显示真实笔记
+- ✅ take 段是 PI / lead 写的，**或**带 caution 的 agent 起草（status: draft）
+- ✅ 复现性 checklist 至少 3 项打勾
+- ✅ 主线页引用了这篇论文（双向）
 - ✅ `/sessions/` 显示第一个 session
+- ✅ pnpm verify 通过
 
 ---
 
