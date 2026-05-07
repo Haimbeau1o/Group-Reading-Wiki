@@ -12,20 +12,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build site
+  # 快速门禁：frontmatter schema / 跨页链接 / 命名约定 / YAML 健康检查
+  # 这个在 ~10 秒内跑完，让坏 PR 不必等 build
+  verify:
+    name: Verify (schema + links + naming)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+      - name: Run pnpm verify
+        run: pnpm verify
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+  build:
+    name: Build site
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
@@ -38,7 +53,8 @@ jobs:
 
       - name: Check links (broken anchors / missing pages)
         run: |
-          # 简单的本地链接自检：所有 href="/..." 是否在 dist/ 里有对应文件
+          # 补充性检查：构建产物里的 href 是否都有对应 dist 文件
+          # 这个检查比 verify 里的 markdown 链接自检覆盖面更广（涵盖了 mdx 渲染后的产物）
           # 仅作为告警，不阻塞 CI
           set +e
           fail=0
@@ -54,3 +70,10 @@ jobs:
           done
           exit 0
         shell: bash
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
