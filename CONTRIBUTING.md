@@ -5,7 +5,7 @@
 
 ## TL;DR
 
-1. **小修改**（错别字、链接修复）：直接在网页右上角点 **Edit page** → GitHub 网页编辑器 → PR
+1. **小修改**（错别字、链接修复）：直接在网页底部点 **在 GitHub 上编辑页面** → GitHub 网页编辑器 → PR
 2. **大修改**（新文章、新专题、翻译）：fork → clone → 本地 `pnpm dev` → 改 → PR
 3. **不会代码**：在 [Discussions](https://github.com/Haimbeau1o/Group-Reading-Wiki/discussions) 提名论文 / 在文章底部评论区抛问题
 

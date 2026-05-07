@@ -70,7 +70,7 @@ This repo currently ships **Leon's Group** (fictional) as a live example:
 | Concept dictionary | [`/concepts/`](src/content/docs/concepts/) | 5 entries (MoE / MLA / MTP / FP8 / GRPO) |
 | Onboarding | [`/onboarding/`](src/content/docs/onboarding.md) | Complete 4-stage timeline |
 
-> 🔗 **[Visit live demo →](https://group-reading-wiki.pages.dev)** *(after deployment)*
+> 🔗 **[Visit live demo →](https://group-reading-wiki.pages.dev)**
 
 Local preview:
 

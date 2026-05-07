@@ -72,7 +72,7 @@
 | 概念词典 | [`/concepts/`](src/content/docs/concepts/) | 5 条（MoE / MLA / MTP / FP8 / GRPO） |
 | 新人入口 | [`/onboarding/`](src/content/docs/onboarding.md) | 完整 4 阶段 timeline |
 
-> 🔗 **[访问 Live Demo →](https://group-reading-wiki.pages.dev)** *(部署后启用)*
+> 🔗 **[访问 Live Demo →](https://group-reading-wiki.pages.dev)**
 
 本地预览：
 

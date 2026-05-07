@@ -83,9 +83,9 @@ export default defineConfig({
       plugins: [
         giscus({
           repo: 'Haimbeau1o/Group-Reading-Wiki',
-          repoId: 'REPLACE_WITH_REPO_ID',
-          category: 'Docs Discussions',
-          categoryId: 'REPLACE_WITH_CATEGORY_ID',
+          repoId: 'R_kgDOSV5qhA',
+          category: 'Wiki Comments',
+          categoryId: 'DIC_kwDOSV5qhM4C8fEF',
           mapping: 'pathname',
           reactions: true,
           inputPosition: 'bottom',

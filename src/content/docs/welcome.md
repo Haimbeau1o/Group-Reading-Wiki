@@ -41,7 +41,7 @@ sidebar:
 
 ### 3. 当协作工具用（写）
 
-所有内容都是 Markdown，托管在 GitHub。点击页面右上角的 **"Edit page"** 就能直接发起 PR：
+所有内容都是 Markdown，托管在 GitHub。点击页面底部的 **"在 GitHub 上编辑页面"** 就能直接发起 PR：
 
 - 错别字、链接失效 → 直接改
 - 想补一段你的理解 → 加段落，Maintainer review 后合并
