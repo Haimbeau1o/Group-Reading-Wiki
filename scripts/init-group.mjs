@@ -188,7 +188,8 @@ import { LinkCard, CardGrid } from '@astrojs/starlight/components';
 ## 🎓 大导师
 
 <CardGrid>
-  <LinkCard title="<PI 姓名>" description="PI · 课题组负责人" href="/members/pi/" />
+  {/* TODO(first-week-after-init Q1): 把 title 改为 PI 实际姓名 */}
+  <LinkCard title="PI" description="课题组负责人" href="/members/pi/" />
 </CardGrid>
 
 ## 👨‍🏫 小导师

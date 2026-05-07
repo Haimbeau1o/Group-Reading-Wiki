@@ -216,31 +216,57 @@ pnpm verify
 
 ### 一轮交互逻辑（每个成员重复）
 
-Agent 问：
+Agent 一次问 1-2 个。**问题 5 不给 example**（PI 容易复粘）。
 
-1. 这个人的角色？（大导师 / 小导师 / 博士生 / 硕士生 / RA）
-2. 名字（slug + display name）？例：`zhang-san` / 张三。
-3. 几年级 / 几年入组？
-4. 他主要在哪条主线上？（关联到循环 2 的主线 slug）
-5. 一句话研究兴趣？
-6. GitHub？（可选）
+1. **这个人的角色**？大导师 / 小导师 (讲师 / postdoc) / 博士生 / 硕士生 / RA。
+   → `--role=<...>`。如果是小导师，追问具体 title（讲师 / postdoc / 助理教授）→ `--title-label=<...>`。
+
+2. **slug + display name**？slug 只能是 小写英文 + 连字符（不能中文）。例：`zhang-san` / display 「张三」。
+   - 不想暴露真名：slug 用 `phd-1` / `ms-1` 占位，display 写「博士 1」。
+   → `<slug>` + `--display-name="..."`
+
+3. **几年级 或 几年入职**？问法随角色变化：
+   - **博士生 / 硕士生**：几年级？→ `--year=N`
+   - **讲师 / postdoc**：什么时候入职的？个月即可。→ `--joined=YYYY-MM`
+   - **大导师（PI）**：在循环 1 已处理，循环 3 不重建
+
+4. **主要在哪条主线上**？给 a/b/c：
+   - **(a)** 是循环 2 建的主线的 owner / 核心推手 → `--theme=<那个 slug>`，同步去 themes/<slug>.md 的 owner 段加 cross-link
+   - **(b)** 做别的 → 记下 PI 说的方向，**本次不建第二条主线**，member 的 `--theme` 不传
+   - **(c)** 跨多条 → 跳 a（主推那条同步主线 owner）
+
+5. **一句话研究兴趣**？不给 example。只说 “一句话，不超过 25 个字、包含 1-2 个技术点关键词”。→ `--interest="..."`（可多次传）
+
+6. **GitHub username**？个人账号。没有说 “无”。→ 手动填联系段
+
+### Agent 执行
 
 ```bash
-# Agent 跑：
-pnpm new:member <slug> --role="<角色>" --json
-# 然后填好 6 个字段
+pnpm new:member <slug> \
+  --role="<角色>" \
+  --display-name="<人话名字>" \
+  [--title-label="<讲师 / postdoc / ...>"] \
+  [--year=<N>  | --joined=<YYYY-MM>] \
+  [--theme=<theme-slug>] \
+  [--interest="<兴趣 1>"] [--interest="<兴趣 2>"] \
+  --json
 ```
 
+如果传了 `--theme`，Agent **还要**手动去改 `themes/<slug>.md` 的 `## 该方向的 owner` 段，加 `[<displayName>](/members/<slug>/)` 链接（本步是 new-member.mjs 的提示但不自动改 themes 文件）。
+
+还要手动更新 `members/index.mdx` 把这个人加到对应的分组下（小导师 / 博士生 / ...）的 CardGrid 里。
+
 ```yaml
-# 更新 group.config.yaml（按实际加进来的人数）
+# 更新 group.config.yaml
 content:
-  members_count: <N>
+  members_count: <N>   # PI 已 = 1，每加一个 +1
 ```
 
 ### 检查点
 
-- ✅ `/members/` 列表显示 PI + N 个成员
-- ✅ `pnpm list:members --json` 输出符合预期
+- ✅ `/members/` 页面显示 PI + N 个成员
+- ✅ 每个成员页 frontmatter 详全（role + status + year/joined + display name）
+- ✅ 成员与他主推主线双向链接（theme.md owner 段 + member.md 主推主线段）
 - ✅ `pnpm verify` 通过
 
 ---
@@ -421,3 +447,11 @@ pnpm verify   # 必须 0 warning
 - **PI 主页宣言 vs 主线方向矛盾未被 agent 检测**。循环 1 写"高效推理"，循环 2 说"alignment"——agent 容易默默写 wiki 内容不一致。已修：循环 2 开头加 "一致性检查" 节，强制 agent 读 pi.md 关于段，发现矛盾时给 PI 三选一 (a 两条独立 / b 改宣言 / c 重选)。
 - **`pnpm new:theme` 脚本不存在**。skill 引用了根本没实现的命令。已修：实现 `scripts/new-theme.mjs` + 注册 package.json，自动创建 themes/<slug>.md 骨架并更新 themes/index.mdx 列表。骨架里 6 个 TODO 段都附上参考样例。
 - **PI 答"什么意思"时 agent 必须立刻短化**。我之前 push-back 时一段太长 PI 不懂。原则：如果 PI 反应是"什么意思"，下一轮回复必须 ≤ 50 字 + 1 个具体问题。
+
+### 演练发现（循环 3，首轮开发阶段）
+
+- **`init-group.mjs` 漏改 `members/index.mdx` 的 PI 卡片**。原来留 `<PI 姓名>` 占位，新仓库主页一直显示。已修：init 时改为 `title="PI"` + TODO 注释指向循环 1。
+- **`new-member.mjs` 默认 `cluster: 学习成长者` 不分角色**。讲师 / postdoc 套不上。已修：cluster 默认空（per role-model.md 决策树），并新增 `--joined`、`--display-name`、`--title-label`、`--theme`、`--interest`（可多次）等 flag 让 agent 一次性写满。
+- **循环 3 Q5 一样犯了"给 example PI 复粘"错**。已修：明确不给 example。
+- **Q3 字段语义随角色变**：博士生用 `year`，讲师 / postdoc 用 `joined`。Skill 改成"问法随角色变化"+ 对应 flag。
+- **PI 卡片 / 成员 index 仍需手工改**。skill 加注：传 `--theme` 后 agent 还得改 themes 文件 + members/index.mdx，new-member.mjs 不自动跨文件改（保护原则）。
