@@ -1,6 +1,9 @@
 # Maintainer Playbook（给 agent 看）
 
-> **新 PI 用 GitHub template 创建新仓库后，他的 agent 应该首先读的文档**。
+> **这个文档负责「已运营阶段 (`stage: established`)」的日常维护决策。**
+>
+> 如果你是 agent，进仓库后请先读 [`.agent/BOOTSTRAP.md`](BOOTSTRAP.md) 判断阶段。如果 `group.config.yaml`
+> 的 `stage` 是 `template` 或 `initialized`，不要从这里入口 —— 去 BOOTSTRAP。
 >
 > 这是一个 **agent-to-agent handoff** —— 上一个 agent（开发模板的我们）把使用方式教给下一个 agent（你 PI 的 agent）。
 
@@ -54,7 +57,11 @@ pnpm list:concepts --json
 | 主线 refresh | `refresh-theme` | [`.agent/skills/refresh-theme.md`](skills/refresh-theme.md) |
 | 个性化 onboarding | `personalized-onboarding` | [`.agent/skills/personalized-onboarding.md`](skills/personalized-onboarding.md) |
 | review PR | `review-pr` | [`.agent/skills/review-pr.md`](skills/review-pr.md) |
-| 用 template 后初始化 | `bootstrap-new-group` | [`.agent/skills/bootstrap-new-group.md`](skills/bootstrap-new-group.md) |
+| 用 template 后初始化（stage=template） | `bootstrap-new-group` | [`.agent/skills/bootstrap-new-group.md`](skills/bootstrap-new-group.md) |
+| 初始化后第一周（stage=initialized） | `first-week-after-init` | [`.agent/skills/first-week-after-init.md`](skills/first-week-after-init.md) |
+| 部署到 Cloudflare Pages | `setup-deploy` | [`.agent/skills/setup-deploy.md`](skills/setup-deploy.md) |
+| 启用 Giscus 评论 | `setup-comments` | [`.agent/skills/setup-comments.md`](skills/setup-comments.md) |
+| 同步模板骨架更新 | `upgrade-template` | [`.agent/skills/upgrade-template.md`](skills/upgrade-template.md) |
 
 每个 skill 顶部有"何时调用 / 输入清单 / 检查点 / Lessons learned"。**先读 Lessons learned**。
 

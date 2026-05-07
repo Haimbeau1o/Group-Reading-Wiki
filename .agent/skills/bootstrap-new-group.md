@@ -128,13 +128,21 @@ agent：（跑真实命令）
 
 agent：（编辑 src/content/docs/index.mdx 移除该链接）✓
 
-       下一步建议：
-       1. 编辑 src/content/docs/members/pi.md 填 PI 信息
-       2. 跟我说你们组关心的研究方向，我帮你建第一条主线
-       3. 跟我说想读的第一篇 paper，我帮你建第一个 session
-
-       哪个先开始？
+       下一步：跑 first-week-after-init skill（5 个对话循环，30-150 分钟）。
+       要现在开始吗？还是想先休息？
 ```
+
+## 衔接 first-week-after-init
+
+这个 skill 完成时，**必须**确认：
+
+- ✅ `group.config.yaml` 存在（init-group.mjs 已自动写）
+- ✅ `stage: initialized`
+- ✅ `group.name` / `group.github` / `group.site_url` 已填
+
+然后立刻读 [`first-week-after-init.md`](first-week-after-init.md) 衔接，**不要让用户独自摸索"下一步该填什么"**。
+
+如果用户说"先停下"，记得告诉他：以后任何时间跟 agent 说"读 BOOTSTRAP 帮我接着填 wiki"，agent 会自动从中断处继续。
 
 ## 不要做的事
 

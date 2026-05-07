@@ -418,6 +418,56 @@ pnpm new:member <slug> --role=<大导师|小导师|博士生|硕士生>
 if (!DRY_RUN) writeFileSync(readmePath, newReadme);
 log(`✏ rewrote README.md`);
 
+// 7.5. 写 group.config.yaml ──────────────────────────
+// 这是 agent 进仓库后判断"这个 wiki 处于什么阶段"的真相源。
+// stage:
+//   template     - 仓库刚 clone，尚未 init（这个文件还不存在）
+//   initialized  - 已跑 init:group，但还没填实质内容（init 写入此值）
+//   established  - 至少 1 PI + 1 主线 + 1 paper note（first-week-after-init 写入）
+const groupConfigPath = join(ROOT, 'group.config.yaml');
+const groupConfigContent = `# group.config.yaml — Agent 真相源
+#
+# 这个文件由 init:group 自动生成。Agent 进仓库后**第一件事**读这个，
+# 判断当前处于哪个阶段，决定调用哪个 skill。详见 .agent/BOOTSTRAP.md。
+#
+# 不要手工随意改 stage —— 由各 skill 在完成关键里程碑后写入。
+# 其他字段（pi.*、deploy.*）由 first-week-after-init / setup-* skill 写入。
+
+stage: initialized            # template | initialized | established
+
+group:
+  name: ${JSON.stringify(NEW_NAME)}
+  slug: ${JSON.stringify(slugify(NEW_NAME))}
+  github: ${JSON.stringify(GITHUB_REPO)}     # owner/repo
+  site_url: ${JSON.stringify(SITE_URL)}
+
+# PI 信息（first-week-after-init 循环 1 填入）
+pi:
+  name: ""                     # 全名（中英文皆可）
+  github: ""                   # GitHub username
+  email: ""                    # 联系邮箱
+  homepage: ""                 # 个人 / 课题组主页
+
+# 内容统计（established stage 后，由各 list-* 脚本可重新计算）
+content:
+  themes_count: 0
+  members_count: 1             # 仅 PI 占位
+  papers_count: 1              # 仅 exemplar
+  last_session: null           # 例 "2026-W19"
+
+# 部署 + 评论
+deploy:
+  cloudflare_pages: false      # setup-deploy 完成后写 true
+  giscus_enabled: false        # setup-comments 完成后写 true
+
+# 模板版本追踪（upgrade-template skill 维护）
+template:
+  baseline_commit: ""          # 上次同步模板时的 upstream/main commit SHA
+  last_synced: ""              # ISO 日期，例 "2026-05-07"
+`;
+if (!DRY_RUN) writeFileSync(groupConfigPath, groupConfigContent);
+log(`📋 wrote group.config.yaml (stage=initialized)`);
+
 // 8. 自删除 init-group 脚本 + package.json 中的命令 ────
 if (!DRY_RUN) {
   // 从 package.json 移除 init:group 脚本
@@ -432,13 +482,20 @@ if (!DRY_RUN) {
 log(`🗑 self-removed: scripts/init-group.mjs (and package.json:scripts.init:group)`);
 
 console.log(`\n✅ Done. Your group's wiki is initialized: "${NEW_NAME}"`);
-console.log(`   Next:`);
+console.log(`   stage: initialized → group.config.yaml`);
+console.log(`\n   推荐路径（让 agent 带你走）：`);
+console.log(`     跟 Claude / Cursor / Cascade 说："读 .agent/BOOTSTRAP.md，帮我填好 wiki"`);
+console.log(`     Agent 会自动调用 first-week-after-init skill：`);
+console.log(`        循环 1: PI 主页（15 min）`);
+console.log(`        循环 2: 第一条研究主线（20 min）`);
+console.log(`        循环 3: 核心成员（30 min）`);
+console.log(`        循环 4: 第一篇真实 paper note（45 min）`);
+console.log(`        循环 5: 部署 + Giscus（30 min）`);
+console.log(`\n   或纯手工：`);
 console.log(`     1. pnpm verify → 应 0 error 0 warning`);
-console.log(`     2. pnpm dev → 看一下当前样子（http://localhost:4321）`);
-console.log(`     3. 编辑 src/content/docs/members/pi.md 填 PI 信息`);
-console.log(`     4. 复制 src/content/docs/themes/example-theme.md 为你的主线`);
-console.log(`     5. pnpm new:member <你> --role=博士生 创建第一个成员`);
-console.log(`     6. git commit -am "init: ${NEW_NAME} wiki"`);
+console.log(`     2. 编辑 src/content/docs/members/pi.md`);
+console.log(`     3. pnpm new:theme / new:member / new:paper`);
+console.log(`     4. git commit -am "init: ${NEW_NAME} wiki"`);
 
 if (USING_PLACEHOLDER_GITHUB || USING_PLACEHOLDER_SITE) {
   console.log(`\n⚠️  检测到占位符，下面几处需要你手工改为真实值：`);

@@ -25,7 +25,7 @@
  * 这是"template 用户能不能用"的唯一真相。CI 会跑这个 gate。
  */
 import { execSync, spawnSync } from 'node:child_process';
-import { cpSync, rmSync, mkdirSync, symlinkSync, existsSync, readdirSync } from 'node:fs';
+import { cpSync, rmSync, mkdirSync, symlinkSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
@@ -141,6 +141,38 @@ console.log(`  ✓ init:group "${GROUP_NAME}" succeeded`);
 if (existsSync(join(TMP_ROOT, 'scripts/init-group.mjs'))) {
   console.log(`  ⚠ scripts/init-group.mjs 未自删除（预期行为：自删除）`);
 }
+
+// 验证：group.config.yaml 写入了，且 stage=initialized
+const gcfgPath = join(TMP_ROOT, 'group.config.yaml');
+if (!existsSync(gcfgPath)) {
+  fail('group.config.yaml 未生成', 'init:group 应该写出这个文件，agent 真相源缺失');
+}
+const gcfg = readFileSync(gcfgPath, 'utf-8');
+if (!/^stage:\s*initialized\b/m.test(gcfg)) {
+  fail('group.config.yaml 的 stage 不是 initialized', gcfg.slice(0, 400));
+}
+if (!gcfg.includes('smoke-lab/smoke-wiki')) {
+  fail('group.config.yaml 没写入正确的 github', gcfg.slice(0, 400));
+}
+if (!gcfg.includes('https://smoke.pages.dev')) {
+  fail('group.config.yaml 没写入正确的 site_url', gcfg.slice(0, 400));
+}
+console.log(`  ✓ group.config.yaml 写入正确（stage=initialized）`);
+
+// 验证：BOOTSTRAP / first-week skill 等关键 agent 文档存在
+const REQUIRED_AGENT_DOCS = [
+  '.agent/BOOTSTRAP.md',
+  '.agent/MAINTAINER_PLAYBOOK.md',
+  '.agent/skills/first-week-after-init.md',
+  '.agent/skills/setup-deploy.md',
+  '.agent/skills/setup-comments.md',
+  '.agent/skills/upgrade-template.md',
+];
+const missingDocs = REQUIRED_AGENT_DOCS.filter(p => !existsSync(join(TMP_ROOT, p)));
+if (missingDocs.length) {
+  fail('Agent 关键文档缺失', missingDocs.join('\n'));
+}
+console.log(`  ✓ Agent 文档齐全（BOOTSTRAP + 5 个新 skill）`);
 
 // ─────────────────────────────────────────────────────────────
 // Step 3-5: 模拟首周工作
