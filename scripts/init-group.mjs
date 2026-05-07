@@ -3,13 +3,13 @@
  * 用 GitHub Template 创建新仓库后，一键把 demo 重塑为你课题组的初始 wiki。
  *
  * 用法：
- *   pnpm init:group "Wang's NLP Group"
- *   pnpm init:group "Wang's NLP Group" --github=wang-lab/wang-nlp-wiki
- *   pnpm init:group "Wang's NLP Group" --github=wang-lab/wang-nlp-wiki \
- *                                      --site-url=https://wang-nlp.pages.dev
- *   pnpm init:group "Wang's NLP Group" --keep-demo      # 保留 DeepSeek 解读
- *   pnpm init:group "Wang's NLP Group" --keep-members   # 保留 15 成员占位
- *   pnpm init:group "Wang's NLP Group" --dry-run        # 仅打印，不动手
+ *   pnpm init:group "<Your Group Name>"
+ *   pnpm init:group "<Your Group Name>" --github=<your-org>/<your-wiki>
+ *   pnpm init:group "<Your Group Name>" --github=<your-org>/<your-wiki> \
+ *                                      --site-url=https://<your-wiki>.pages.dev
+ *   pnpm init:group "<Your Group Name>" --keep-demo      # 保留 DeepSeek 解读
+ *   pnpm init:group "<Your Group Name>" --keep-members   # 保留 15 成员占位
+ *   pnpm init:group "<Your Group Name>" --dry-run        # 仅打印，不动手
  *
  * --github=owner/repo  若未给：自动读 git remote origin；读不到用占位符
  * --site-url=URL        若未给：用占位 https://YOUR-SITE.pages.dev

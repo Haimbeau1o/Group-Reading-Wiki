@@ -23,11 +23,11 @@
 
 | 必填 | 字段 | 示例 |
 |------|------|------|
-| ✓ | 课题组显示名 | `"Wang's NLP Group"` `"清华大模型小组"` |
-| ✓ | PI 名（英文 / GitHub username 优先） | `wang-prof` `rchen` |
-| ✓ | GitHub 仓库（owner/repo） | `wang-lab/wang-nlp-wiki`。可从 `git remote -v` 自动读 |
-|    | 站点 URL（Cloudflare Pages 地址） | `https://wang-nlp.pages.dev`。不知道就先用占位，后面填 |
-|    | PI 邮箱 | `wang@example.edu` |
+| ✓ | 课题组显示名 | 中文 / 英文都可：例 `"<你的课题组名>"` |
+| ✓ | PI 名（英文 / GitHub username 优先） | `<pi-handle>` 或姓氏拼音，例：`lab-pi` |
+| ✓ | GitHub 仓库（owner/repo） | `<your-org>/<your-wiki>`。可从 `git remote -v` 自动读 |
+|    | 站点 URL（Cloudflare Pages 地址） | `https://<your-wiki>.pages.dev`。不知道就先用占位，后面填 |
+|    | PI 邮箱 | `<pi-email>@<institution>` |
 |    | 是否保留 demo 内容 | 默认清空，可选 `--keep-demo` |
 |    | 是否保留 15 个成员占位框架 | 默认清空到 1 个 PI 模板，可选 `--keep-members` |
 
@@ -84,15 +84,15 @@ pnpm verify
 ## 示例对话
 
 ```
-用户：把这个模板初始化为我们 Wang's NLP Group 用。
-agent：好。我先检查一下…
+用户：把这个模板初始化为我们课题组用。
+agent：好。能告诉我课题组名吗？我先检查仓库状态…
 
   ✓ 已是用户独立仓库（从 template 创建）
   ✓ 当前是 demo 状态（含 Leon's Group）
   ✓ 依赖已装
 
-  我会跑 `pnpm init:group "Wang's NLP Group"`。这会：
-    - 替换所有 "Leon's Group" → "Wang's NLP Group"
+  我会跑 `pnpm init:group "<你的课题组名>"`。这会：
+    - 替换所有 "Leon's Group" → "<你的课题组名>"
     - 删 14 个 demo 成员占位（保留 1 个 PI 模板）
     - 删 4 条 demo themes（保留 1 个 example-theme 模板）
     - 删 demo session
@@ -107,7 +107,7 @@ agent：好。我先检查一下…
 
 agent：好。先跑 dry-run 给你看一下：
 
-  [pnpm init:group "Wang's NLP Group" --dry-run 输出]
+  [pnpm init:group "<你的课题组名>" --dry-run 输出]
 
   确认开始？
 用户：开始

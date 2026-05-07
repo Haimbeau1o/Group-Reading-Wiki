@@ -35,17 +35,51 @@
 
 ### Agent 开场白
 
-> "我们先把你的 PI 主页填好 —— 这是访客 / 新生最先看到的页面。我会问你 7 个问题，可以一次答完，也可以分几次。"
+> "我们先把你的 PI 主页填好 —— 这是访客 / 新生最先看到的页面。我会问你 7 轮问题（某一轮可能拆为 a/b），可以一次答完，也可以分几次。某一问跳过就说跳过。"
 
-### 7 个问题（Agent 一次问 1-2 个，等 PI 回答再继续）
+### 7 轮问题（Agent 一次问 1-2 个，等 PI 回答再继续）
 
-1. **你的全名（中英文）**？例：陈丽 / Li Chen。
-2. **头衔**？助理教授 / 副教授 / 教授 / 研究员 / Lecturer。
-3. **GitHub username**？（你已经填好仓库 owner 了，但 PI 个人 username 可能不同）
-4. **联系方式优先级排序**？office hours / email / 群聊？给一个"这周如何找到你"的句子。
-5. **个人主页或 Google Scholar URL**？
-6. **3 篇最有代表性的论文**？标题 + venue 即可（"GPT-4 Technical Report. NeurIPS 2024"）。
-7. **一段话研究宣言**？"我做什么 / 为什么这件事重要 / 我的判断是什么"，3-5 句话。
+> 设计原则：**每个问题只对应一个具体产出字段**（yaml 某字段 或 pi.md 某段）。
+> 不要把两个需求合进一题（例如"联系方式优先级"不能拿到具体 email）。
+
+1. **你的全名（中英文）**？例：陈丽 / Li Chen。只有中文或只有拼音也可。
+   → 写入 `pi.md` frontmatter `title:` + sidebar `label:`
+
+2. **头衔**？助理教授 / 副教授 / 教授 / 研究员 / Lecturer。**如果多个 title 用 `/` 分隔**（例："教授 / 系主任"）。
+   → 写入 `pi.md` frontmatter `title_label:`
+
+3. **你个人的 GitHub 账号用户名**？用来在 wiki 里关联你的头像、以及 PR / issue 里 @ 你。
+   - 如果你常用 GitHub：给我**你登录用的 username**（即 `https://github.com/<X>` 里的 X）
+   - 如果不用或还没账号：说"没有"，我留空
+   ⚠️ 这是**个人**账号，不是你仓库的 owner（那个接下来 init 已自动读取了）
+   → 写入 `group.config.yaml: pi.github`
+
+4a. **常用联系邮箱**？格式：`<your-email>@<your-domain>`。不想公开说"跳过"，wiki 上不显示邮件链接。
+   → 写入 `group.config.yaml: pi.email`
+
+4b. **这周怎么找你最有效**？一句话。例：
+   - "邮件最快，office hours 周三下午在 SEIEE-300"
+   - "先找博士大师兄过滤，过不了的再来找我"
+   → 写入 `pi.md` 的 `## 找我` 段
+
+5. **个人主页或 Google Scholar URL**？可跳过，agent 留 TODO。
+   → 写入 `group.config.yaml: pi.homepage` + `pi.md` 的 `## 找我` 段
+
+6. **3 篇最有代表性的论文**？格式：`*Title*. Venue Year.`。
+   ⚠️ **不要给 default example**——PI 会偷懒把占位论文原样复粘。只说格式，PI 不会记就跳过。
+   → 写入 `pi.md` 的 `## 代表论文` 段
+
+7. **一段话研究宣言**？3–5 句话讲清楚：(a) 你做什么 (b) 为什么这件事重要 (c) 你的判断是什么。
+   - 可以给 1–2 个范例（不同风格）让 PI 参考，但说明「这是例子，不要复粘」
+   → 写入 `pi.md` 的 `## 关于` 段
+
+### 从研究宣言提取 research-interests
+
+问题 7 的宣言里挑出 1–3 个关键词写进 `pi.md` frontmatter `research-interests` 字段。
+
+- **如果宣言具体**（提到了 1–2 个技术点）→ 以它们为关键词。
+- **如果宣言过于抽象**（例如 "我做人工智能"）→ 主动追问："你能给我 1–3 个具体点的关键词吗？"
+- **不能直接照抄默认值**：`pi.md` 模板里保留的 `research-interests` 占位词（如"长上下文效率"等）来自 demo，不能照抄。这个字段必须是"这位 PI 真正关心的"——只从问题 7 的答案里提。
 
 ### Agent 答完 7 题后做的事
 
@@ -58,10 +92,10 @@
 ```yaml
 # 2. 更新 group.config.yaml
 pi:
-  name: "Li Chen"
-  github: "lichen-prof"
-  email: "li.chen@example.edu"
-  homepage: "https://lichen-lab.example.edu"
+  name: "<从问题 1>"
+  github: "<从问题 3；可为空字符串>"
+  email: "<从问题 4a；可为空字符串>"
+  homepage: "<从问题 5；可为空字符串>"
 ```
 
 ```bash
@@ -327,6 +361,14 @@ pnpm verify   # 必须 0 warning
 ## Lessons learned（写给以后的 agent）
 
 - 第一次跑这个 skill 时，PI 通常**最累的循环是 4**（写 paper note）。如果 PI 表现疲劳，建议把循环 4 拆成两次会话：第一次填骨架（Agent 抓 arXiv），第二次再写 take。
-- 循环 1 的 7 个问题里，**问题 4（如何找你）和问题 7（研究宣言）** 容易被 PI 跳过 — 不要硬逼，留 TODO 注释让他后面补。
+- 循环 1 的某些问题（5 个人主页、6 代表论文、7 研究宣言）容易被 PI 跳过 — 不要硬逼，留 TODO 注释让他后面补。
 - `group.config.yaml` 的更新**必须实时写**。如果忘了写，后面 agent 进来会以为还没做。
 - 写 paper note 时**尽量引导对话式语言**，不要 bullet list。读者从对话里学到的判断力比从清单多。
+
+### 演练发现（循环 1，首轮开发阶段）
+
+- **PI 不知道"GitHub username"指什么**。Skill 原版假设 PI 知道仓库 owner=组织级，问题 3 要 PI 给"个人 username"——这个对比对 PI 来说是空中楼阁。已修：问题 3 改为先解释"为什么要它"，再给找用户名的方法（`github.com/<X>` 里的 X）。
+- **"联系方式优先级"无法拿到具体 email**。原版问题 4 把"邮箱地址"和"如何找你"合进一题，PI 答了 prose 但 yaml 字段拿不到结构化 email。已修：拆为 4a (yaml: email) + 4b (prose: 找我段)。
+- **default example 太合理 PI 直接复粘**。问题 6 给的例子论文 PI 原样贴回。已修：明确**不给 default example**，只给格式，PI 不会就跳过。
+- **research-interests 字段从哪来不明**。原版 skill 没说该字段如何填，agent 容易拍脑袋写或留默认。已修：明确"从问题 7 研究宣言里提取 1–3 个关键词；宣言抽象就主动追问"。
+- 多 title 用 `/` 分隔的约定写进 skill（之前没写）。
