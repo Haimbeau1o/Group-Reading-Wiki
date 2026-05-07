@@ -280,6 +280,15 @@ if (!KEEP_DEMO) {
   // 同时清空文章里引用的图片资源
   removePath('public/docs-assets');
   // 概念词典：保留作参考（任何 AI 组都能用），但用户可以手动删
+
+  // 5.5. 同步从 astro.config.mjs 删除 DeepSeek 专题 sidebar group
+  //      否则 build 会崩（指向已删除的 slug）
+  sanitizeAstroSidebar();
+
+  // 5.6. 扫描保留页，去除 / 改写 demo-specific 链和段落
+  //      这是 fork-safe 的关键：让保留的 welcome/onboarding/roadmap 等
+  //      不再谈 Leon's Group 的 DeepSeek 专题 / 具体主线 / 具体成员
+  sanitizeDemoLinks();
 }
 
 // 6. 修改首页 hero ──────────────────────────────────
@@ -353,6 +362,213 @@ console.log(`     2. 编辑 src/content/docs/members/pi.md 填 PI 信息`);
 console.log(`     3. 复制 src/content/docs/themes/example-theme.md 为你的主线`);
 console.log(`     4. pnpm new:member <你> --role=博士生 创建第一个成员`);
 console.log(`     5. git commit -am "init: ${NEW_NAME} wiki"`);
+
+/**
+ * 从 astro.config.mjs 删除 DeepSeek 专题 sidebar group。
+ * 匹配从 `{ label: '🐋 DeepSeek 专题',` 到该 group 的 `},` 结束。
+ */
+function sanitizeAstroSidebar() {
+  const p = join(ROOT, 'astro.config.mjs');
+  if (!existsSync(p)) return;
+  let content = readFileSync(p, 'utf-8');
+  const before = content.length;
+  // 整个 DeepSeek 专题 group 的块（包括 items 数组）
+  content = content.replace(
+    /\s*\{\s*label:\s*'[🐋\s]*DeepSeek[^']*',\s*items:\s*\[[\s\S]*?\],\s*\},/,
+    ''
+  );
+  if (content.length !== before) {
+    if (!DRY_RUN) writeFileSync(p, content);
+    log(`✏ sanitized astro.config.mjs (removed DeepSeek 专题 sidebar group)`);
+  }
+}
+
+/**
+ * 扫描保留的 .md / .mdx 文件，清洗 demo-specific 引用：
+ *   1. 精准重写：welcome / pi / papers/index / roadmap 等 demo-heavy 页
+ *   2. 正则去链兜底：剩余任何 [text](/deepseek/...) / [text](/themes/<demo>/) /
+ *      [text](/members/<demo>/) / [text](/sessions/2026-w\d+-...) → 只保留 text
+ * 这样 fork 用户默认拿到的站点 0 broken link，prose 上"你们组的真实内容"留空。
+ */
+function sanitizeDemoLinks() {
+  // 需要精准重写的 demo-heavy 文件（整段换，不靠 regex）
+  rewriteWelcomeMd();
+  rewritePiMd();
+  rewriteRoadmapMd();
+  rewritePapersIndexMd();
+  rewriteOnboardingMd();
+
+  // 正则兜底：扫描所有保留的 .md / .mdx，把 demo-pattern 链接去掉
+  const allFiles = walkFiles(
+    join(ROOT, 'src/content/docs'),
+    p => /\.(md|mdx)$/.test(p)
+  );
+  const DEMO_LINK_PATTERNS = [
+    // [text](/deepseek/...) 或 (/en/deepseek/...)
+    /\[([^\]]+)\]\(\/(?:en\/)?deepseek\/[^)]+\)/g,
+    // [text](/themes/<demo-theme>/)
+    /\[([^\]]+)\]\(\/themes\/(?:long-context|moe-sparsity|test-time-reasoning|multimodal)[^)]*\)/g,
+    // [text](/members/<demo-member>/)
+    /\[([^\]]+)\]\(\/members\/(?:leon|postdoc-\d|lecturer-\d|phd-senior-\d|phd-mid-\d|phd-new-\d|ms-research-\d|ms-eng-\d|ug-ra-\d)[^)]*\)/g,
+    // [text](/sessions/2026-w\d+-xxx/)
+    /\[([^\]]+)\]\(\/sessions\/\d{4}-w\d+[^)]*\)/g,
+  ];
+  // LinkCard/ Card JSX 里的 href="/deepseek/..." 属性（可能在 .mdx 里）
+  const LINKCARD_PATTERNS = [
+    /<LinkCard[^>]*href=["']\/(?:en\/)?deepseek\/[^"']*["'][^>]*\/>/g,
+    /\s*href=["']\/(?:en\/)?deepseek\/[^"']*["']/g,
+  ];
+
+  for (const f of allFiles) {
+    let content = readFileSync(f, 'utf-8');
+    const before = content;
+    for (const re of DEMO_LINK_PATTERNS) {
+      content = content.replace(re, '$1');
+    }
+    for (const re of LINKCARD_PATTERNS) {
+      content = content.replace(re, '');
+    }
+    if (content !== before && !DRY_RUN) {
+      writeFileSync(f, content);
+      log(`🧹 sanitized links in ${f.replace(ROOT + '/', '')}`);
+    }
+  }
+}
+
+function rewriteWelcomeMd() {
+  const p = join(ROOT, 'src/content/docs/welcome.md');
+  if (!existsSync(p)) return;
+  let content = readFileSync(p, 'utf-8');
+
+  // 替换 title "欢迎来到 Leon's Group 共读 Wiki" → 通用
+  content = content.replace(
+    /^title: 欢迎来到.*共读 Wiki$/m,
+    `title: 欢迎来到 ${NEW_NAME} 共读 Wiki`
+  );
+
+  // 删除 demo-note 段（:::note[这是一个模板 demo] ... :::）
+  content = content.replace(/:::note\[这是一个模板 demo\][\s\S]*?:::\n\n?/, '');
+
+  // 替换"推荐阅读路径"整节（到下一个 ## 为止）
+  content = content.replace(
+    /## 推荐阅读路径\n[\s\S]*?(?=\n## |$)/,
+    `## 推荐阅读路径
+
+> 待补。本组还没有共读内容 —— 用 \`pnpm new:paper\` / \`pnpm new:session\` 创建第一篇，
+> 然后回来这里推荐给新人。
+
+`
+  );
+
+  // 最后一行 "准备好了？👉 去 [DeepSeek 专题](/deepseek/overview/) 开始第一次共读吧。"
+  content = content.replace(
+    /准备好了？[\s\S]*?第一次共读吧。?\s*$/,
+    `准备好了？先看看 [研究主线](/themes/)，加入 [第一次共读](/sessions/)。`
+  );
+
+  if (!DRY_RUN) writeFileSync(p, content);
+  log(`✏ rewrote welcome.md (stripped demo content)`);
+}
+
+function rewritePiMd() {
+  // pi.md 由 init-group 从 leon.md 重命名而来（早先步骤已处理姓名）。
+  // 这里进一步清洗其中的 demo 链。
+  const p = join(ROOT, 'src/content/docs/members/pi.md');
+  if (!existsSync(p)) return;
+  let content = readFileSync(p, 'utf-8');
+
+  // 替换 "当前主推方向" 段（到下一个 ##）
+  content = content.replace(
+    /## 当前主推方向\n[\s\S]*?(?=\n## )/,
+    `## 当前主推方向
+
+> 待 PI 填：列出你最关心的 2-3 条研究主线，用站内链接。
+> 例：我目前最关心 **[主线 A](/themes/)** 和 **[主线 B](/themes/)**。
+
+`
+  );
+
+  if (!DRY_RUN) writeFileSync(p, content);
+  log(`✏ rewrote members/pi.md (stripped demo theme/member links)`);
+}
+
+function rewriteRoadmapMd() {
+  const p = join(ROOT, 'src/content/docs/roadmap.md');
+  if (!existsSync(p)) return;
+  let content = readFileSync(p, 'utf-8');
+
+  // 删除 "DeepSeek 专题（v0.1）" block（到下一个 ### 为止）
+  content = content.replace(
+    /### DeepSeek 专题（v0\.1）\n[\s\S]*?(?=\n### |\n## )/,
+    ''
+  );
+
+  if (!DRY_RUN) writeFileSync(p, content);
+  log(`✏ rewrote roadmap.md (removed DeepSeek demo block)`);
+}
+
+function rewritePapersIndexMd() {
+  const p = join(ROOT, 'src/content/docs/papers/index.md');
+  if (!existsSync(p)) return;
+  const content = `---
+title: 论文索引
+description: 按时间线和主题整理的共读论文清单。
+sidebar:
+  order: 1
+  label: 索引
+---
+
+> 📚 **滚动更新**。每篇 paper note 是"事实卡片"（一篇论文一页）；
+> 跨多篇的叙事性深度专辑放在 \`/<topic>/\` 下（见 [STYLE_GUIDE](../../docs/STYLE_GUIDE.md)）。
+
+## 已发表 paper notes
+
+> 用 \`pnpm new:paper <slug>\` 创建。完成后列到这里。
+
+| 时间 | 论文 | 状态 |
+|------|------|------|
+| — | — | — |
+
+## 已提名 / 待读
+
+> 通过 [GitHub Discussions](../..) 的 *"提名"* 模板收集。
+`;
+  if (!DRY_RUN) writeFileSync(p, content);
+  log(`✏ rewrote papers/index.md`);
+}
+
+function rewriteOnboardingMd() {
+  const p = join(ROOT, 'src/content/docs/onboarding.md');
+  if (!existsSync(p)) return;
+  let content = readFileSync(p, 'utf-8');
+
+  // description 替换 Leon's Group → 通用
+  content = content.replace(
+    /description: 刚加入.*？跟着/,
+    `description: 刚加入 ${NEW_NAME}？跟着`
+  );
+
+  // "看一遍上周的共读笔记" 一行替换
+  content = content.replace(
+    /\| 看一遍上周的 \[共读笔记\][^|]*\|[^|]*\|\n/,
+    `| 看一遍近期 [共读 session](/sessions/)，对组里气氛有点感觉 | 30 分钟 |\n`
+  );
+
+  // "就读：1. xxx 2. yyy" 跟在 "例如想入门..." 后面的 demo 清单
+  content = content.replace(
+    /例如想入门长上下文，就读：\n\n1\. [\s\S]*?\n\n不感兴趣？没关系，\*\*默认从 V4 概览开始\*\*——它是所有方向的共同起点。\n/,
+    `例如跟着你感兴趣的主线走 session 和 paper note。\n\n不知道从哪开始？先翻 [research 主线](/themes/) 挑一条最近的 [session](/sessions/)。\n`
+  );
+
+  // Reading log 示例里的 [V4 研究](/deepseek/...) → 泛化
+  content = content.replace(
+    /读了 \[V4 研究\]\(\/deepseek\/v4-research\/\)/,
+    `读了 [某篇 paper note](/papers/)`
+  );
+
+  if (!DRY_RUN) writeFileSync(p, content);
+  log(`✏ rewrote onboarding.md (stripped demo-specific examples)`);
+}
 
 /**
  * 清空一个目录里的 .md / .mdx 文件，但保留：

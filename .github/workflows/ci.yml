@@ -75,13 +75,11 @@ jobs:
           retention-days: 7
 
   # Fork 用户冷启动端到端测试 —— "模板对新课题组可用吗"的唯一真相
-  # 当前 continue-on-error: true，因为已知有 27 broken link（Phase A2 修复中）
-  # Phase C 完成后会改为 required
+  # Phase A2 完成后，此 job 必须通过才能合并（不再 continue-on-error）
   smoke-test-fork:
-    name: Smoke test (cold-fork user journey)
+    name: Smoke test (cold-fork user journey, with build)
     needs: verify
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -91,5 +89,5 @@ jobs:
           cache: pnpm
       - name: Install deps
         run: pnpm install --frozen-lockfile
-      - name: Simulate cold fork + init + first-week workflow + verify
-        run: pnpm smoke-test:fork
+      - name: Simulate cold fork → init → first-week workflow → verify → build
+        run: pnpm smoke-test:fork --with-build

@@ -106,16 +106,19 @@ function copyDir(src, dest) {
 copyDir(SRC_ROOT, TMP_ROOT);
 console.log(`  ✓ Copied repo → ${TMP_ROOT}`);
 
-// Step 1b: 符号链 node_modules（速度）
+// Step 1b: 依赖安装
+// - 默认（快速模式）：符号链 node_modules（~1s），适合 verify-only 的本地迭代
+// - --with-build：符号链会让 Astro/Vite 路径解析混乱，必须真实 install
 const srcModules = join(SRC_ROOT, 'node_modules');
 const destModules = join(TMP_ROOT, 'node_modules');
-if (existsSync(srcModules) && !existsSync(destModules)) {
-  symlinkSync(srcModules, destModules, 'dir');
-  console.log(`  ✓ Symlinked node_modules (saves ~60s)`);
-} else if (!existsSync(srcModules)) {
-  console.log(`  ⚠ No node_modules in source; smoke test will run pnpm install (slow)`);
+if (WITH_BUILD || !existsSync(srcModules)) {
+  console.log(`  → Running pnpm install --prefer-offline (needed for real build; ~15s with cache)`);
   const res = run('pnpm install --prefer-offline');
   if (!res.ok) fail('pnpm install failed in smoke test', res.out);
+  console.log(`  ✓ Dependencies installed`);
+} else {
+  symlinkSync(srcModules, destModules, 'dir');
+  console.log(`  ✓ Symlinked node_modules (verify-only fast mode; use --with-build for real install)`);
 }
 
 // ─────────────────────────────────────────────────────────────
