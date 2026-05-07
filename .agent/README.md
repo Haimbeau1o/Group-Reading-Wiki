@@ -4,15 +4,24 @@
 
 ```
 .agent/
-├── README.md           ← 你正在读
-├── context/            ← agent 进仓库后必读
+├── README.md                ← 你正在读（目录索引）
+├── MAINTAINER_PLAYBOOK.md   ← 🔥 fork 后 agent 第一篇必读
+├── context/                 ← agent 进仓库后的额外背景
 │   ├── repo-map.md
 │   ├── role-model.md
 │   └── conventions.md
-├── skills/             ← 按场景索引的 10 个 skill
-└── templates/          ← 各种 markdown 模板（agent 拷贝填空）
+├── skills/                  ← 10 个按场景调用的 skill
+├── notes/                   ← (可选) PI / 组的偏好文件
+└── templates/               ← 各种 markdown 模板
 ```
 
-如果你（agent）刚进仓库：先读项目根的 `AGENT_GUIDE.md`，然后回到这里读 `context/`。
+## Agent 上手顺序
 
-人类用户**也可以读**这里的内容了解 agent 化工作流，但日常写作仍然按 `CONTRIBUTING.md` 即可。
+1. **[MAINTAINER_PLAYBOOK.md](MAINTAINER_PLAYBOOK.md)** —— 你的工作角色、工具箱、不变量
+2. **[../docs/STYLE_GUIDE.md](../docs/STYLE_GUIDE.md)** —— 各类文章长什么样
+3. **[skills/](skills/)** 里对应你当前任务的 skill 文件 —— 按场景调用
+4. **[notes/](notes/)**（如果存在）—— 这个组 PI 的特定偏好
+
+## 人类读者
+
+可以读所有这些文件了解 agent-native 的工作流。日常写作仍按 [`../CONTRIBUTING.md`](../CONTRIBUTING.md) 即可。

@@ -19,9 +19,10 @@
  *
  * 已经完整的项目（已 fork 用过本脚本的）不应再次运行。
  */
-import { readFileSync, writeFileSync, rmSync, existsSync, readdirSync, renameSync, unlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, rmSync, existsSync, readdirSync, renameSync, unlinkSync, statSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseFrontmatter } from './lib/frontmatter.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -244,7 +245,13 @@ if (!DRY_RUN) writeFileSync(themesIndex, newThemesIndex);
 log(`✏ rewrote themes/index.mdx`);
 
 // 4. 清空 sessions ──────────────────────────────────
-removePath('src/content/docs/sessions/2026-w18-deepseek-v4.md');
+// 删除 sessions/*.md 和 sessions/digest/*，除了 frontmatter 含 exemplar: true 的
+cleanDirHonorExemplar('src/content/docs/sessions');
+cleanDirHonorExemplar('src/content/docs/sessions/digest');
+
+// 4.5. 清空 papers/ 但保留 exemplar ─────────────────
+// R1 paper note 有 exemplar: true → 默认保留作"什么是好 paper note"样板
+cleanDirHonorExemplar('src/content/docs/papers');
 const sessionsIndex = join(ROOT, 'src/content/docs/sessions/index.mdx');
 const newSessionsIndex = `---
 title: 共读会议（Sessions）
@@ -346,6 +353,35 @@ console.log(`     2. 编辑 src/content/docs/members/pi.md 填 PI 信息`);
 console.log(`     3. 复制 src/content/docs/themes/example-theme.md 为你的主线`);
 console.log(`     4. pnpm new:member <你> --role=博士生 创建第一个成员`);
 console.log(`     5. git commit -am "init: ${NEW_NAME} wiki"`);
+
+/**
+ * 清空一个目录里的 .md / .mdx 文件，但保留：
+ *   - index.md / index.mdx（保留）
+ *   - frontmatter 有 `exemplar: true` 的（作样板）
+ *
+ * 这样 R1 这类"组样板"内容会自动跨 init:group 保留，不需要 --keep-demo。
+ */
+function cleanDirHonorExemplar(relDir) {
+  const dir = join(ROOT, relDir);
+  if (!existsSync(dir)) return;
+  for (const name of readdirSync(dir, { withFileTypes: true })) {
+    if (!name.isFile()) continue;
+    if (!/\.(md|mdx)$/.test(name.name)) continue;
+    if (/^index\.(md|mdx)$/.test(name.name)) continue;
+    const p = join(dir, name.name);
+    try {
+      const fm = parseFrontmatter(p).frontmatter;
+      if (fm.exemplar === true || fm.exemplar === 'true') {
+        log(`🛡 kept ${relDir}/${name.name} (exemplar)`);
+        continue;
+      }
+    } catch (e) {
+      // ignore parse errors, treat as not exemplar
+    }
+    if (!DRY_RUN) unlinkSync(p);
+    log(`🗑 removed ${relDir}/${name.name}`);
+  }
+}
 
 function slugify(s) {
   return s.toLowerCase()

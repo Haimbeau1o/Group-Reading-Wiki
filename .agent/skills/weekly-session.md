@@ -123,3 +123,76 @@ agent：（执行 4 步 + verify）✓
 - ❌ 不自动 commit / push
 - ❌ 不替带读人写实质内容（只填模板和引导问题）
 - ❌ 不假定 paper 的具体细节（如果不确定，留 `（待填）`）
+
+## Lessons learned（端到端跑 R1 / W19 时踩的坑）
+
+> 这一节由历次实战沉淀。后续 agent 跑这个 skill 时**先读这一节**，避免重复踩坑。
+
+### 1. paper title 含 `:` 必须加 YAML 引号
+
+`new:paper deepseek-r1 --title="DeepSeek-R1: Incentivizing..."` 生成的 frontmatter：
+
+```yaml
+title: DeepSeek-R1: Incentivizing Reasoning via RL   ← Astro YAML parser 失败
+```
+
+**正确**：脚手架脚本的 `yamlSafe()` 会自动检测并加引号。如果是手写 frontmatter，记得：
+```yaml
+title: "DeepSeek-R1: Incentivizing Reasoning via RL"
+```
+
+`pnpm verify` 会预警这个问题。
+
+### 2. paper note 是 exemplar 时记得标 `exemplar: true`
+
+如果你写的 paper note **足够好可作为"组样板"**（示范"什么是好的组内 paper note"），加：
+
+```yaml
+exemplar: true
+```
+
+这样 `pnpm init:group` 重置 demo 内容时**会保留这一篇**。R1 paper note 就是这样。
+
+判断标准：
+- 该 paper note 写满了 [STYLE_GUIDE](../../docs/STYLE_GUIDE.md) 全部 11 节
+- 有真实组内 take / 开放问题（不是占位）
+- 内容在 6 个月内仍有教学价值
+
+### 3. session 是未来周次时不要伪造 post-meeting
+
+**不要** 在 session 还没开（status: upcoming）时写 Live notes / Post-meeting 段。
+
+正确做法：把这两段留空（或 `…` 占位），由带读人在会后填。
+
+例外：纯 demo 场景下，**过去**的 session（W18）可以填满作示范。
+
+### 4. 引导问题要"显然不在 abstract 里"
+
+R1 的好问题：
+
+- ✅ "GRPO 在 partial-credit reward 下还稳吗？"（论文没充分实验）
+- ✅ "G = 16 是不是 sweet spot？G 自适应有没有意义？"（论文没 ablation）
+
+R1 的烂问题：
+
+- ❌ "什么是 GRPO？"（abstract 第二句就有）
+- ❌ "R1 比 GPT-4 强吗？"（看 Table 1 即可）
+
+**判断标准**：问题要逼带读人**离开 paper**才能答 — 翻其他工作、想我们组工作、或承认不知道。
+
+### 5. 跨 session 的链接必须用绝对路径
+
+```markdown
+✅ [W18 共读](/sessions/2026-w18-deepseek-v4/)
+❌ [W18 共读](../sessions/2026-w18-deepseek-v4.md)
+```
+
+verify 会抓 broken link。
+
+### 6. 创建完成后**必须**跑 verify
+
+```bash
+pnpm verify
+```
+
+如果有 error，**必须修完再说"完成"**。fail-fast 在 agent 流程里特别重要，否则错误会传染（坏链接被复制粘贴到下个 session）。
