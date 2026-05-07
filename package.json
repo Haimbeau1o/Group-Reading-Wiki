@@ -16,6 +16,7 @@
     "new:paper": "node scripts/new-paper.mjs",
     "new:member": "node scripts/new-member.mjs",
     "init:group": "node scripts/init-group.mjs",
+    "smoke-test:fork": "node scripts/smoke-test-fork.mjs",
     "verify": "node scripts/verify.mjs",
     "verify:full": "node scripts/verify.mjs --build",
     "list:members": "node scripts/list.mjs members",
