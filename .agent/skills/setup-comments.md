@@ -91,13 +91,10 @@ git commit -am "feat: enable giscus comments"
 git push     # Cloudflare 会自动重部署
 ```
 
-**未来**：`pnpm update:group-config --giscus-on`（待 update-group-config.mjs）。
+一行权威：
 
-**当前**：agent 用 edit tool 改 group.config.yaml：
-
-```yaml
-deploy:
-  giscus_enabled: true   # 从 false 改为 true
+```bash
+pnpm update:group-config --giscus-on
 ```
 
 ## 检查点
@@ -130,4 +127,4 @@ deploy:
 - **#20 修复**：原 skill 标题说"4 个 ID"，实际只复制 2 个（repoId + categoryId），repo 名 / category 名 init:group 已写好。已统一为"2 个 runtime ID"。
 - **#21 修复**：Step 0 加"装 Giscus GitHub App"前置 —— 漏装时 giscus.app "数据仓库" 第二个绿勾不出现，整个流程卡死。已加显式 Step 0 + Step 3 三个绿勾的诊断指引。
 - **#22 修复**：Step 4 原说"用 sed 或编辑器" → astro.config.mjs 是 JS 文件含双引号易破。已统一为"用 edit tool 不用 sed"。
-- **#23 修复**：yaml 修改未来用 `pnpm update:group-config --giscus-on`（待 update-group-config.mjs 脚本）。当前用 edit tool。
+- **#23 修复**：yaml 修改现在用 `pnpm update:group-config --giscus-on` 原子调用（脚本已补齐）。

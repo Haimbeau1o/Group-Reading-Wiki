@@ -17,6 +17,7 @@
     "new:member": "node scripts/new-member.mjs",
     "new:theme": "node scripts/new-theme.mjs",
     "init:group": "node scripts/init-group.mjs",
+    "update:group-config": "node scripts/update-group-config.mjs",
     "smoke-test:fork": "node scripts/smoke-test-fork.mjs",
     "verify": "node scripts/verify.mjs",
     "verify:full": "node scripts/verify.mjs --build",

@@ -92,16 +92,15 @@ Agent 用 edit tool 替换 `site:` 字段（不要用 sed —— astro.config.mj
 
 #### 5.2 改 group.config.yaml
 
-**未来**：用 `pnpm update:group-config --site-url=<url> --deploy-on=cloudflare`（待补 update-group-config.mjs 脚本）。
+一行权威：
 
-**当前**：agent 用 edit tool 改两处：
-
-```yaml
-group:
-  site_url: "https://<your-project>.pages.dev"   # 这里
-deploy:
-  cloudflare_pages: true                          # 和这里
+```bash
+pnpm update:group-config \
+  --site-url=https://<your-project>.pages.dev \
+  --deploy-on=cloudflare
 ```
+
+脚本会原子修改 `group.site_url` + `deploy.cloudflare_pages`，保留所有注释。**不要手改、不要 sed**。
 
 #### 5.3 Commit + push
 
@@ -148,5 +147,5 @@ git push     # 触发 Cloudflare 重新部署，这次 OG / sitemap 用真实 UR
 
 - **#18 修复**：选 `Astro` preset 后 Cloudflare 自动填 `npm run build`，必须**手动**覆盖为 `pnpm build`。已加 ⚠️。
 - **#19 修复**：GitHub Org 仓库需 org-level 授权 Cloudflare（不是 personal）。已加 ⚠️。
-- **#20 修复**：Step 5 的 yaml 修改未来用 `pnpm update:group-config` 脚本（标 TODO）。当前用 edit tool 不用 sed。
+- **#20 修复**：Step 5 的 yaml 修改现在用 `pnpm update:group-config --site-url=... --deploy-on=cloudflare` 原子调用（脚本已补齐）。
 - **astro.config.mjs 修改不用 sed**：JS 含变量插值、引号容易破语法。一律 edit tool。
