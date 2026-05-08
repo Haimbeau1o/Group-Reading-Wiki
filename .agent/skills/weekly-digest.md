@@ -18,12 +18,24 @@
 
 ### 1. 收集本周数据
 
+**必须用 `--source=git`**（默认 mtime 不可靠 — init / checkout / 批量改文件都会刷 mtime）：
+
 ```bash
-pnpm list:sessions --since=7d --json
-pnpm list:papers --since=7d --json
-pnpm list:concepts --since=7d --json
+# "本周新增"内容（A = Added）
+pnpm -s list:sessions --since=7d --source=git --status=A --json
+pnpm -s list:papers   --since=7d --source=git --status=A --json
+pnpm -s list:concepts --since=7d --source=git --status=A --json
+
+# "本周更新"内容（A 或 M 都包含；不带 --status 则返回窗口内所有动过的）
+pnpm -s list:sessions --since=7d --source=git --json
+
+# 提交摘要
 git log --since="7 days ago" --pretty=format:"%h %s (%an)"
 ```
+
+输出 JSON 每条带 `git_status` (A/M/R) 和 `git_date`，方便区分"新建" vs "更新"。
+
+> ⚠ 不要用 `pnpm list:* --since=Nd`（不带 `--source=git`），它过滤的是 filesystem mtime，会把今天 init/checkout 动过的所有文件误报成"本周新增"。
 
 ### 2. 结构化生成
 
@@ -95,11 +107,7 @@ sidebar:
 
 首次端到端跑通。**重要踩坑**：
 
-1. ⚠️ **`list.mjs --since=Nd` 用 mtime 不可靠**：批量改文件 / 跑 init / git checkout 都会刷新 mtime，导致 digest 把全部文件算成"本周新增"。**正确做法**：
-   - **新增文件**：用 `git log --since="7 days ago" --diff-filter=A --name-only --pretty=format:`（filter 出 Added 状态的路径）
-   - **修改文件**：`--diff-filter=M`（Modified）
-   - 或者读文件的 frontmatter `session_date` / 类似字段
-   - `pnpm list:* --since=7d` **只能当快速排序辅助**，不能直接当"本周新增"过滤器
+1. ✅ **`list.mjs --since=Nd` 用 mtime 不可靠 — 已修复**：cycle-6 后置加了 `--source=git` flag。批量改文件 / init / checkout 刷 mtime 不再误报。**新用法**：`pnpm list:* --since=7d --source=git --status=A`。输出每条带 `git_status` (A/M/R) 和 `git_date`。详见执行步骤 §1。原 mtime 模式作为向后兼容仍可用，但**不要用于 digest 数据收集**。
 2. **digest 归档命名规范**：用 lowercase week — `2026-w19.md`（与现有 `2026-w18.md` 一致）。注意文档里的 `<year-week>` 占位易让 agent 写成 `2026-W19.md`，这会破坏归档索引。
 3. **多 session 周的处理**：如果一周有 2+ session（罕见，但调度滑动会发生），"本周共读"段每个 session 各一块，主 insight 各抽一条。
 4. **Slack 版字符上限按显示字符算**：markdown link 在 Slack 渲染后是显示文本字符数，反引号 / 加粗符号不算入显示。目标 250-400 字按**渲染后**字符数。
