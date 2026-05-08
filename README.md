@@ -2,77 +2,75 @@
 
 # Group Reading Wiki
 
-**A reusable, agent-native wiki template for AI / ML research labs.**
-
-可复用、agent 原生的课题组共读 Wiki 模板，为 AI 研究组打造的"共享大脑"。
+**可复用、agent 原生的课题组共读 Wiki 模板。**
+A reusable, agent-native wiki template for AI / ML research labs.
 
 [![Astro](https://img.shields.io/badge/Astro-6.x-FF5D01?logo=astro&logoColor=white)](https://astro.build/)
 [![Starlight](https://img.shields.io/badge/Starlight-0.38-blueviolet)](https://starlight.astro.build/)
-[![License: MIT](https://img.shields.io/badge/Code-MIT-blue.svg)](LICENSE)
+[![Code: MIT](https://img.shields.io/badge/Code-MIT-blue.svg)](LICENSE)
 [![Content: CC BY-SA 4.0](https://img.shields.io/badge/Content-CC%20BY--SA%204.0-lightgrey.svg)](LICENSE)
 [![Agent-native](https://img.shields.io/badge/Agent--native-✓-success)](AGENT_GUIDE.md)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-[**English**](README.en.md) · **简体中文** · [Live Demo](#-live-demo) · [Quick Start](#-快速开始) · [Agent Guide](AGENT_GUIDE.md) · [Contributing](CONTRIBUTING.md)
+[**Live Demo**](https://group-reading-wiki.pages.dev) · [Quick Start](#-快速开始) · [Agent Guide](AGENT_GUIDE.md) · [English](README.en.md)
 
 </div>
 
 ---
 
-## 🌟 这是什么
+## 解决什么问题
 
-**Group Reading Wiki** 是一个**面向 AI / 大模型研究组**的可复用 wiki 模板。它把"周会共读、论文笔记、研究主线、新人 onboarding、组内记忆沉淀"全部整合在一个 Git 原生的产品里，并且：
+你的课题组每周都开周会，但：
 
-- 🤖 **Agent-native** — 后续维护可以**完全交给 AI agent**（Claude / Cursor / Cascade 等）。内置 10 份 skill、3 份 long-term context、机器可读的 verify / list / scaffold CLI。
-- 🧬 **Use this template → 一键改组名** — GitHub 顶栏点绿色 **Use this template** 按钮 → `pnpm init:group "Your Group"` 自动清空 demo、替换品牌，30 秒变成你组的 wiki。
-- 📚 **学术写作友好** — KaTeX 公式、Mermaid 图、跨术语链接、论文出处规范、中文全文搜索，开箱即用。
-- 🌐 **公开 / 私域分层** — 主线、论文解读对外公开吸引合作；个人 reading log、internal playbook 用 Cloudflare Access 锁住。
-- 🪶 **静态站点 + 免费部署** — Astro + Cloudflare Pages，0 服务器成本，构建产物 < 5MB。
+- 笔记永远停在某个学生本地的 markdown 里，会后没人去翻
+- 新生入组要找师兄要"必读 paper 列表"，每届都重做一遍
+- 上学期讨论的关键 insight，半年后没人记得是谁先提的
+- PI 写一段研究观点要打开 Notion / 飞书 / 微信群三个地方
+- 论文读了一堆，组内都没人知道彼此的 take
 
-> **当前仓库**就是一个 live demo —— 内置虚构课题组 **Leon's Group** 演示真实研究组的 wiki 长什么样。
+**Group Reading Wiki** 把周会节奏 / 论文笔记 / 研究主线 / 成员主页 / 概念词典放进一个 git 原生的静态站点，**95% 后续维护交给 AI agent**（Claude / Cursor / Cascade 等），PI 只负责定方向、审 take。
 
-## 📖 目录
+---
 
-- [核心特性](#-核心特性)
-- [Live Demo](#-live-demo)
-- [快速开始](#-快速开始)
-- [架构概览](#-架构概览)
-- [Agent-native 维护](#-agent-native-维护)
-- [产品模块](#-产品模块)
-- [部署](#-部署)
-- [Roadmap](#-roadmap)
-- [设计哲学](#-设计哲学)
-- [贡献](#-贡献)
-- [协议](#-协议)
+## 30 秒上手
 
-## ✨ 核心特性
+```text
+1. 点 GitHub 顶栏绿色 [Use this template] 创建你的仓库
 
-| 特性 | 说明 |
-|------|------|
-| 🗓️ **Sessions 三段式** | Pre-read / Live notes / Post-meeting 绑定周会节奏，wiki 不是"会后纪要"而是全程记录 |
-| 🧭 **Themes 研究主线** | 组的研究地图，新人 30 分钟看完就上路 |
-| 👥 **双层成员模型** | 简化角色（大/小导师 + 博/硕生）+ 行为聚类（5 cluster），灵活支持各种课题组结构 |
-| 🎯 **Onboarding timeline** | Day-1 / 第一周 / 第一月 / 三个月分阶段路径，可被 agent 个性化定制 |
-| 📚 **概念词典 + 论文解读** | 跨术语自动超链接，paper note 模板内置"我们组的 take"段 |
-| 🔧 **Scaffolding CLI** | `pnpm new:session/paper/member` 一行生成模板；支持 `--json` 给 agent 解析 |
-| 🤖 **10 份 Agent skills** | 从 bootstrap、weekly session、post-meeting recap 到 PR review 全场景 |
-| ✅ **自检工具** | `pnpm verify` 一键检查 frontmatter schema、链接、命名约定 |
-| 🌐 **i18n** | 中文为主语言，英文同等地位（内容可逐步翻译） |
+2. clone 下来跑：
+     pnpm install
+     pnpm init:group "Your Group Name" \
+       --github=<your-org>/<your-repo> \
+       --site-url=https://your-site.pages.dev
+
+3. 打开 Claude / Cursor / Cascade，对它说：
+     "读 .agent/BOOTSTRAP.md，帮我填好 wiki"
+   → agent 自动调 first-week-after-init skill
+   → 5 个对话循环（PI 主页 / 主线 / 成员 / 第一篇 paper / 部署）
+
+4. push → Cloudflare Pages 自动部署 → 上线
+```
+
+总耗时：~2 小时把空架子填成可上线 wiki。期间 PI 只回答问题，所有写文件的事 agent 做。
+
+---
 
 ## 🎬 Live Demo
 
-仓库当前内容 = **Leon's Group**（虚构）的真实样貌：
+仓库当前内容 = 一个虚构课题组 **Leon's Group**（专注 DeepSeek 系列大模型解读）的 live wiki：
 
-| 模块 | 入口 | 内容规模 |
-|------|------|---------|
+> 🔗 **<https://group-reading-wiki.pages.dev>**
+
+| 模块 | 入口 | 内容 |
+|------|------|------|
 | 研究主线 | [`/themes/`](src/content/docs/themes/) | 4 条（长上下文 / MoE / Test-time Reasoning / 多模态） |
-| 成员 | [`/members/`](src/content/docs/members/) | 15 个占位（PI + 博士后 + 讲师 + 各年级博硕 + RA） |
-| 共读 sessions | [`/sessions/`](src/content/docs/sessions/) | W18 完整示例 |
-| 论文解读 | [`/deepseek/`](src/content/docs/deepseek/) | DeepSeek-V4 全套深度解读 |
+| 成员 | [`/members/`](src/content/docs/members/) | 15 个占位（PI + 博士后 + 各年级博硕 + RA） |
+| 共读 sessions | [`/sessions/`](src/content/docs/sessions/) | W18 / W19 完整三段式 + W18 weekly digest |
+| 论文解读 | [`/papers/`](src/content/docs/papers/) | DeepSeek-R1 PI-grade 解读（exemplar，跨 init 保留） |
+| 深度专辑 | [`/deepseek/`](src/content/docs/deepseek/) | DeepSeek-V4 长上下文 + 混合注意力 + 视觉栈深度文章 |
 | 概念词典 | [`/concepts/`](src/content/docs/concepts/) | 5 条（MoE / MLA / MTP / FP8 / GRPO） |
-| 新人入口 | [`/onboarding/`](src/content/docs/onboarding.md) | 完整 4 阶段 timeline |
+| 新人入口 | [`/onboarding/`](src/content/docs/onboarding.md) | Day-1 / 第一周 / 第一月 / 三个月 |
 
-> 🔗 **[访问 Live Demo →](https://group-reading-wiki.pages.dev)**
+> 用 `pnpm init:group` 跑出来的新仓库会**自动清空** Leon's Group 这些 demo 内容，只保留通用骨架 + 1 个 exemplar paper note。
 
 本地预览：
 
@@ -83,259 +81,296 @@ pnpm install
 pnpm dev          # → http://localhost:4321
 ```
 
+---
+
 ## 🚀 快速开始
 
-### 给"你想用它建自己组 wiki"的人
+### 路径 A · 我是 PI，要建组 wiki
 
-```text
-🌟 点顶栏绿色 「Use this template」 按钮 → Create a new repository
-   └ 合你心意的仓库名，请勾选 Include all branches，复制后的仓库
-     是你的独立项目，和模板仓库没有 upstream 关联。
-```
+最推荐：让 agent 接管。
 
 ```bash
-# 1. clone 你刚创建的新仓库
+# 1. 点 [Use this template] → clone 下来
 git clone https://github.com/<your-org>/<your-new-repo>
 cd <your-new-repo>
 pnpm install
 
-# 2. 一键重塑为你的课题组（清空 demo、替换品牌、含 GitHub / site URL）
-pnpm init:group "Your Group Name" \
+# 2. 一键改组（清空 demo + 替换品牌 + 写 group.config.yaml）
+pnpm init:group "Your Group" \
   --github=<your-org>/<your-new-repo> \
   --site-url=https://your-site.pages.dev
 
-# 3. 起来看
-pnpm dev          # → http://localhost:4321
-pnpm verify       # 必须 0 warning 才算干净
+# 3. agent 接管：跟你的 IDE 助手说一句话
+#    "读 .agent/BOOTSTRAP.md，帮我填好 wiki"
+#    它会自动跑 first-week-after-init 的 5 个对话循环
 
-# 4. commit 你的初始状态
+# 4. 验证 + commit
+pnpm verify        # 必须 0 warning
 git commit -am "init: <Your Group> wiki"
+
+# 5. 部署到 Cloudflare Pages（10 分钟，详见 §部署）
 ```
 
-担心以后没法同步模板的改进？读 [docs/UPGRADING.md](docs/UPGRADING.md) — 讲了"骨架 vs 内容"边界和升级命令。
+后续要同步模板的改进，读 [`docs/UPGRADING.md`](docs/UPGRADING.md) 或调用 `upgrade-template` skill。
 
-### 给"AI agent / 维护者"的人
+### 路径 B · 我想 contribute 模板 / 学 agent-native 设计
 
 ```bash
-# Agent 友好的命令（都支持 --json）
-pnpm verify                            # 自检 frontmatter / 链接 / 命名
-pnpm list:members --json               # introspect 仓库状态
-pnpm list:sessions --since=7d --json
-pnpm new:session 2026-W19 paper-slug --lead=phd-1 --json
+# 不要点 Use this template — 用传统 fork 才能给上游提 PR
+git clone https://github.com/<your-fork>/Group-Reading-Wiki
+cd Group-Reading-Wiki
+pnpm install
+pnpm dev                    # 跑 demo 看现状
+ls .agent/skills/           # 14 个场景化 skill 是核心
+cat AGENT_GUIDE.md          # 模板设计的入口文档
 ```
 
-详细：[**Agent Guide →**](AGENT_GUIDE.md)
+详见 [`CONTRIBUTING.md`](CONTRIBUTING.md)。
+
+---
+
+## 🎯 能做什么 / 不能做什么
+
+### ✅ 能做
+
+- **结构化沉淀**：14 个 agent skill 覆盖周会、论文、概念、成员、主线、digest、PR review、模板升级
+- **scaffold + 自检**：`pnpm new:session/paper/member/theme/concept` 一行生成模板，`pnpm verify` 检 schema/链接/命名
+- **状态机驱动**：`group.config.yaml` 是 agent 真相源，`stage` 字段（template → initialized → established）决定调哪个 skill
+- **冷启动友好**：`pnpm init:group` 30 秒清空 demo、替换品牌、写好配置
+- **公私分层**：主线 / 论文解读对外公开吸引合作；个人 reading log / internal playbook 用 Cloudflare Access 锁
+- **学术写作**：KaTeX 公式、Mermaid 图、跨术语自动链接、中英文全文搜索（Pagefind）
+
+### ❌ 不能做
+
+- **不替你做研究判断** —"我们组的 take"段必须 PI / 带读人写，agent 只起草事实部分
+- **不会自动 commit / push** — 每个 skill 写完都让你看 `git diff` 再决定
+- **不会替你写论文笔记内容** — agent 抓 arXiv 元信息 + 起草骨架 + caution banner 标注 agent-draft 段，正文 / take 你写
+- **不替代周会本身** — wiki 是周会的**沉淀**，会还是要开
+- **不自动翻译英文** — i18n 留 TODO 让人手工译，机翻质量不达标
+
+---
+
+## 🤖 Agent-native 怎么用
+
+### 1. 真相源：`group.config.yaml`
+
+`pnpm init:group` 写入。Agent 进仓库**第一件事**读这个，判断当前状态：
+
+```yaml
+stage: initialized          # template | initialized | established
+group:
+  name: "Your Group"
+  github: "your-org/your-repo"
+  site_url: "https://..."
+pi:
+  name: ""                  # first-week-after-init 循环 1 填
+  github: ""
+content:
+  themes_count: 0
+  members_count: 1
+  papers_count: 1
+template:
+  baseline_commit: ""       # upgrade-template 维护
+  last_synced: ""
+```
+
+不要手工改 `stage` —— 由各 skill 在完成关键里程碑后写入。改其他字段用 `pnpm update:group-config`（原子操作，保留 yaml 注释）。
+
+### 2. 第一周编排：5 个对话循环
+
+`first-week-after-init` skill 把"从空架子到上线"拆成 5 个独立可中断的循环：
+
+| 循环 | 主题 | 时长 | 完成判据 |
+|------|------|------|---------|
+| 1 | PI 主页 | ~15 min | `members/pi.md` 真实，`pi.*` 字段填好 |
+| 2 | 第一条研究主线 | ~20 min | `themes/<slug>.md` 一条真实主线 |
+| 3 | 核心成员（PI + 1-2 学生） | ~30 min | `members/` ≥ 2 个真实成员 |
+| 4 | 第一篇 paper note | ~45 min | `papers/<slug>.md` 含"我们组的 take" |
+| 5 | 部署 + Giscus | ~30 min | 站点上线、`stage: established` |
+
+每个循环之间 PI 可以"先停下，明天继续"。Agent 每次重新进入先 `cat group.config.yaml` 看进度。
+
+### 3. 14 个场景化 Skill
+
+按使用频率分 4 类。每个 skill 独立自包含、有"不要做的事"清单。
+
+**Onboarding**
+
+| Skill | 触发 |
+|-------|------|
+| [`bootstrap-new-group`](.agent/skills/bootstrap-new-group.md) | "把模板初始化为 X 组" |
+| [`first-week-after-init`](.agent/skills/first-week-after-init.md) | init 完了，5 个 loop 接管 |
+| [`personalized-onboarding`](.agent/skills/personalized-onboarding.md) | 给新生定制阅读路径 |
+| [`add-member`](.agent/skills/add-member.md) | 新成员 / 毕业 / alumni |
+
+**周循环**
+
+| Skill | 触发 |
+|-------|------|
+| [`weekly-session`](.agent/skills/weekly-session.md) | 下周共读 X 论文 |
+| [`post-meeting-recap`](.agent/skills/post-meeting-recap.md) | 周会刚结束，整理 transcript |
+| [`weekly-digest`](.agent/skills/weekly-digest.md) | 周日发 wiki 周报 |
+| [`refresh-theme`](.agent/skills/refresh-theme.md) | 更新主线论文 / 开放问题 |
+
+**内容增长**
+
+| Skill | 触发 |
+|-------|------|
+| [`add-paper-note`](.agent/skills/add-paper-note.md) | 我读完 X paper，做笔记 |
+| [`add-concept`](.agent/skills/add-concept.md) | 解释 X 术语，加到词典 |
+| [`setup-deploy`](.agent/skills/setup-deploy.md) | 上线到 Cloudflare Pages |
+
+**治理**
+
+| Skill | 触发 |
+|-------|------|
+| [`setup-comments`](.agent/skills/setup-comments.md) | 启用 Giscus 评论 |
+| [`review-pr`](.agent/skills/review-pr.md) | review 这个 PR |
+| [`upgrade-template`](.agent/skills/upgrade-template.md) | 同步上游模板改进 |
+
+### 4. 工具链
+
+```bash
+# 自检（CI 必跑）
+pnpm verify                                    # schema + 链接 + 命名（快）
+pnpm verify:full                               # 加跑 build（merge 前必跑）
+
+# Introspect（agent 决策前调用）
+pnpm list:members --json [--role=博士生]
+pnpm list:sessions --since=7d --source=git --status=A --json
+pnpm list:papers --theme=long-context --json
+
+# Scaffold（agent 创建时调用）
+pnpm new:session 2026-W19 paper-slug --lead=<member> --json
+pnpm new:paper <slug> --title="..." --theme=<theme> --json
+pnpm new:member <slug> --role=博士生 --year=3 --json
+pnpm new:theme "<name>" --slug=<slug> --json
+pnpm new:concept <slug> --full="..." --label="..." --json
+
+# 原子改 group.config.yaml（保留 yaml 注释，不要手 vim）
+pnpm update:group-config --site-url=... --giscus-repo-id=... --baseline-commit=...
+```
+
+> ⚠ `list:* --since=Nd` 默认按文件 mtime 过滤，**会被 init / git checkout 刷 mtime 干扰**。digest / 增量场景必须加 `--source=git`，按 git 历史过滤。
+
+---
 
 ## 🏗️ 架构概览
 
 ```
 Group-Reading-Wiki/
 │
-├── 📄 AGENT_GUIDE.md            ← Agent 入口（任何 AI 都先读这个）
-├── 🤖 .agent/                   ← Agent 长期记忆 + skill 库
-│   ├── context/                 ← repo-map / role-model / conventions
-│   ├── skills/                  ← 10 个场景化 skill
-│   └── templates/               ← 原始模板备份
+├── AGENT_GUIDE.md            ← Agent 入口（任何 AI 第一次见仓库读这个）
+├── group.config.yaml         ← Agent 真相源（init 时生成）
 │
-├── 📚 src/content/docs/         ← Astro Starlight 内容（自动转 sidebar）
-│   ├── index.mdx                ← 首页 + 本周共读 banner
-│   ├── themes/                  ← 研究主线
-│   ├── members/                 ← 成员主页
-│   ├── sessions/                ← 周会三段式记录
-│   ├── papers/                  ← 论文解读
-│   ├── concepts/                ← 概念词典
-│   ├── onboarding.md            ← 新人入口
-│   └── how-to-contribute.md     ← 贡献指南
+├── .agent/                   ← Agent 长期记忆 + skill 库
+│   ├── BOOTSTRAP.md          ← stage 状态机入口
+│   ├── context/              ← repo-map / role-model / conventions
+│   ├── skills/               ← 14 个场景化 skill
+│   └── templates/            ← 原始模板备份
 │
-├── 🔧 scripts/                  ← Agent 友好的工具链
-│   ├── new-session.mjs          ← scaffolding（支持 --json）
-│   ├── new-paper.mjs
-│   ├── new-member.mjs
-│   ├── init-group.mjs           ← fork 后一键改组（用完自删）
-│   ├── verify.mjs               ← schema + link + naming 自检
-│   ├── list.mjs                 ← introspect tooling
-│   └── lib/frontmatter.mjs      ← 极简 YAML parser + schema 校验
+├── src/content/docs/         ← Astro Starlight 内容（自动转 sidebar）
+│   ├── themes/ members/ sessions/ papers/ concepts/
+│   ├── onboarding.md  welcome.md  roadmap.md
+│   └── en/                   ← 英文镜像（i18n）
 │
-├── 🎨 src/styles/               ← 主题（Mermaid / KaTeX 适配）
-├── 🌍 src/i18n/                 ← 多语言文案
-├── ⚙️  astro.config.mjs         ← 站点 / sidebar / 评论 / 插件配置
-└── 📦 .github/                  ← CI workflow + Issue/PR 模板
+├── scripts/                  ← Agent 友好的工具链（每个支持 --json）
+│   ├── init-group.mjs        ← Use-template 后一键改组（含 demo 清洗）
+│   ├── verify.mjs            ← schema + link + naming 自检
+│   ├── list.mjs              ← introspect（含 --source=git mode）
+│   ├── new-{session,paper,member,theme,concept}.mjs
+│   ├── update-group-config.mjs ← 原子改 yaml（保留注释）
+│   └── smoke-test-fork.mjs   ← 冷启动 E2E
+│
+├── docs/                     ← 维护文档（UPGRADING / STYLE_GUIDE / MAINTAINER_PLAYBOOK）
+└── .github/workflows/        ← CI（verify on PR）
 ```
 
-## 🤖 Agent-native 维护
+详细：[`.agent/context/repo-map.md`](.agent/context/repo-map.md)
 
-> **核心理念**：这个 wiki 后续维护 95% 工作可以交给 AI agent。**人**只需要定方向、做决策。
-
-### Agent 入口
-
-```text
-AGENT_GUIDE.md            ← 通用入口（agent 第一次见仓库读这个）
-.agent/context/
-  repo-map.md             ← 目录结构、命名约定、自动 sidebar 规则
-  role-model.md           ← 双层角色模型 + frontmatter schema
-  conventions.md          ← 写作风格、链接规则、commit 信息
-```
-
-### 10 个 Skill 覆盖全场景
-
-| Skill | 触发场景 | 文件 |
-|-------|---------|------|
-| `bootstrap-new-group` | "把模板初始化为我们 X 组用" | [`.agent/skills/bootstrap-new-group.md`](.agent/skills/bootstrap-new-group.md) |
-| `weekly-session` | "下周共读 X 论文，让 Y 带读" | [skill →](.agent/skills/weekly-session.md) |
-| `post-meeting-recap` | "周会刚结束，整理 transcript" | [skill →](.agent/skills/post-meeting-recap.md) |
-| `add-member` | "新成员加入 / 毕业 / 离开" | [skill →](.agent/skills/add-member.md) |
-| `add-paper-note` | "我读完 X paper，做笔记" | [skill →](.agent/skills/add-paper-note.md) |
-| `add-concept` | "解释 X 术语，加到词典" | [skill →](.agent/skills/add-concept.md) |
-| `refresh-theme` | "更新 X 主线的论文清单 / 开放问题" | [skill →](.agent/skills/refresh-theme.md) |
-| `personalized-onboarding` | "给新生定制阅读路径" | [skill →](.agent/skills/personalized-onboarding.md) |
-| `weekly-digest` | "周日发 wiki 周报" | [skill →](.agent/skills/weekly-digest.md) |
-| `review-pr` | "review 这个 PR" | [skill →](.agent/skills/review-pr.md) |
-
-### Agent 工具链
-
-```bash
-# 自检（CI 必跑）
-pnpm verify                                    # schema + 链接 + 命名
-pnpm verify:full                               # 加跑 build
-
-# Introspect（agent 决策前调用）
-pnpm list:members --json [--role=博士生]
-pnpm list:themes --json
-pnpm list:sessions --since=7d --json
-pnpm list:papers --theme=long-context --json
-pnpm list:concepts --json
-
-# Scaffold（agent 创建时调用）
-pnpm new:session 2026-W19 paper-slug --lead=<member> --json
-pnpm new:paper <slug> --title="..." --theme=<theme> --json
-pnpm new:member <slug> --role=博士生 --year=3 --json
-```
-
-每个 skill 独立自包含、有"不要做的事"清单，防止 agent 越权（不自动 commit、不替组员写观点、不暴露 internal 内容）。
-
-## 📦 产品模块
-
-<details>
-<summary><b>🗓️ Sessions（共读会议）</b></summary>
-
-每周一次共读，每次产出一个三段式 markdown 文档：
-
-- **Pre-read**（会前 3 天）：必读 / 选读、关联概念、引导问题
-- **Live notes**（会议中）：时间结构化讨论记录
-- **Post-meeting**（会后 24h）：Key insights（最重要！）+ Action items + 与组工作关联
-
-模板：[`.agent/templates/`](.agent/templates/) · 命令：`pnpm new:session`
-</details>
-
-<details>
-<summary><b>🧭 Themes（研究主线）</b></summary>
-
-每条主线是组的一个研究地图节点：包含 owner、关键论文、组内工作、开放问题、推荐阅读路径、组内立场。
-
-模板：[`.agent/templates/theme.md`](.agent/templates/theme.md)
-</details>
-
-<details>
-<summary><b>👥 Members（双层角色模型）</b></summary>
-
-**简化模型**（4 角色）：大导师 / 小导师 / 博士生 / 硕士生 — 跟实际编制对齐
-**行为聚类**（5 cluster）：方向掌舵者 / 研究主理人 / 学习成长者 / 任务驱动者 / 流动接触者 — 跟做事方式对齐
-
-每个成员一个独立主页 + reading log + 个性化 onboarding 路径。
-</details>
-
-<details>
-<summary><b>🎯 Onboarding</b></summary>
-
-通用 timeline：[`onboarding.md`](src/content/docs/onboarding.md)
-个性化路径：写在每个成员自己的主页里（用 `personalized-onboarding` skill 生成）。
-</details>
-
-<details>
-<summary><b>📚 Papers + Concepts</b></summary>
-
-论文解读：每篇必有"我们组的 take"段（PI / 带读人写）。
-概念词典：缩写为 slug、首次出现术语自动链接到词典。
-</details>
+---
 
 ## 🚢 部署
 
 ### 推荐：Cloudflare Pages（免费 + CI 自动）
 
-1. Cloudflare Dashboard → **Workers & Pages → Create → Connect to Git**
-2. 选你的仓库，构建配置：
-   - Build command: `pnpm build`
-   - Build output: `dist`
-   - Env: `NODE_VERSION=20`
-3. 每次 push 自动部署，PR 有独立预览 URL
+1. Cloudflare Dashboard → **Workers & Pages → Create → Connect to Git → 选你的仓库**
+2. 构建配置：
+   - Framework preset：`Astro`
+   - ⚠ **手动覆盖** Build command 为 `pnpm build`（preset 默认 `npx astro build`，monorepo 易出错）
+   - Build output：`dist`
+   - Env：`NODE_VERSION=22.12`
+3. ⚠ 如果仓库在 **GitHub 组织**下：先在 org settings → Third-party access → Cloudflare Pages 做 **org-level 授权**，否则 OAuth flow 会卡
+4. 部署成功后回写：
+   ```bash
+   pnpm update:group-config --deploy-url=https://<your-sub>.pages.dev
+   ```
 
-> 免费额度：500 build/月，无限带宽。一个 wiki 完全够。
+每次 push 自动部署，PR 有独立预览 URL。免费额度 500 build/月 + 无限带宽，对 wiki 完全够。
+
+### Giscus 评论（可选）
+
+1. 装 [Giscus GitHub App](https://github.com/apps/giscus) 到你的仓库
+2. 仓库 Settings → General → Features → **Discussions ON**
+3. 去 [giscus.app/zh-CN](https://giscus.app/zh-CN) 配置，复制 2 个 runtime ID（`data-repo-id` + `data-category-id`）
+4. 写回：
+   ```bash
+   pnpm update:group-config \
+     --giscus-repo-id=R_kg... \
+     --giscus-category-id=DIC_kw...
+   ```
+
+详见 [`setup-deploy`](.agent/skills/setup-deploy.md) / [`setup-comments`](.agent/skills/setup-comments.md) skill。
 
 ### 私域内容（Cloudflare Access）
 
-`/internal/` `/members/<x>/` 等敏感路径用 Cloudflare Access 配置 SSO 鉴权，外部人看不到。
+`/internal/`、`/members/<x>/` 等敏感路径用 Cloudflare Access 配 SSO 鉴权，外部人看不到。免费额度内。
 
-详见 [部署完整文档](src/content/docs/how-to-contribute.md)。
+### 替代部署：Vercel / Netlify / GitHub Pages
 
-### 替代：Vercel / Netlify / GitHub Pages
+均兼容。GitHub Pages 需在 `astro.config.mjs` 加 `base: '/<repo>/'`。
 
-均兼容。GitHub Pages 需要在 `astro.config.mjs` 加 `base: '/<repo>/'`。
+---
 
-## 🗺️ Roadmap
+## 💡 使用建议
 
-- [x] 基础架构（Astro + Starlight + KaTeX + Mermaid + Pagefind）
-- [x] 5 个产品模块（sessions / themes / members / onboarding / papers）
-- [x] Agent-native 层（AGENT_GUIDE + 10 skills + verify/list 工具）
-- [x] Scaffolding CLI（new:* + init:group + --json 模式）
-- [ ] **Live demo 部署**到 Cloudflare Pages
-- [ ] **真实 agent 端到端验证**（W19 共读 DeepSeek-R1 case）
-- [ ] **CI workflow** 跑 `pnpm verify` 阻塞坏 PR
-- [ ] **Internal / Private 层**模板（playbook / 招生 / 评估）
-- [ ] **Reading log** 模块结构化（聚合页 + 按 author 排序）
-- [ ] **English 内容** 完整翻译
-- [ ] **更多 agent skills**（fix-broken-link / migrate-old-session / quarterly-review）
+- **写得不完美 + 发出来 > 完美 + 私藏** — 占位 / TODO 段不会让 verify 报错；agent 起草段会带 caution banner 标注，PI 后审就好
+- **PI 写作成本要极低** — "PI 的 take" 段允许一段话；让 agent 起草初稿，PI 改两笔即可
+- **用 Discussions 评论区让组员低成本贡献** — 不必每次开 PR，一句话也算
 
-## 🎯 设计哲学
-
-1. **绑住周会节奏，不靠个人自觉** — Sessions 三段式是核心载体
-2. **贡献力度多样化** — 100 字 reading log = 一行 take = 一次评论 = 词典补充，**都算**
-3. **PI 写作成本要极低** — "Leon's takes" 允许一段话
-4. **个人主页是 portfolio** — Reading log 自然累积成毕业 track record
-5. **新人 onboarding 由学习者维护** — PI 已忘了入门痛点
-6. **first draft, ugly, OK** — 写得不完美 + 发出来 > 完美 + 私藏
-7. **Agent-friendly by design** — 不是给 agent 加适配层，而是从一开始就为人 + agent 共同维护设计
+---
 
 ## 🛠️ 技术栈
 
 - **[Astro 6](https://astro.build/)** + **[Starlight 0.38](https://starlight.astro.build/)** — 静态文档站点
 - **[KaTeX](https://katex.org/)** — 数学公式（构建期渲染）
 - **[Mermaid](https://mermaid.js.org/)** — 流程图（lazy load 客户端渲染）
-- **[Pagefind](https://pagefind.app/)** — 全文搜索（含中文索引）
+- **[Pagefind](https://pagefind.app/)** — 全文搜索（含中文分词）
 - **[Giscus](https://giscus.app/)** — GitHub Discussions 评论
 - **[Cloudflare Pages](https://pages.cloudflare.com/)** + **[Access](https://www.cloudflare.com/zero-trust/products/access/)** — 部署 + 鉴权
+- Node 22.12+ · pnpm 10.x
+
+---
 
 ## 🤝 贡献
 
-无论你是用模板的研究组、想改进模板的开发者、还是 AI agent，都欢迎贡献。
+- **用模板的研究组** — 在你的 README 加一句 `Based on [Group-Reading-Wiki](https://github.com/Haimbeau1o/Group-Reading-Wiki)`，让其他组找到
+- **想改进模板的开发者** — 用**传统 fork**（不是 Use this template！）后开 PR，详见 [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
-- 用法 / Bug 反馈：[New Issue](https://github.com/Haimbeau1o/Group-Reading-Wiki/issues/new/choose)
-- 改进模板：请用**传统 fork**（非 Use this template）后开 PR，详见 [CONTRIBUTING.md](CONTRIBUTING.md)
-- 用在你课题组：在你的 README 加一句 "Based on [Group-Reading-Wiki](https://github.com/Haimbeau1o/Group-Reading-Wiki)" 让其他组找到
+报 bug：[New Issue](https://github.com/Haimbeau1o/Group-Reading-Wiki/issues/new/choose)
+
+---
 
 ## 📜 协议
 
-- **代码**（`scripts/` `astro.config.mjs` 等）：[MIT](LICENSE)
+- **代码**（`scripts/` `astro.config.mjs` `.agent/skills/` 等）：[MIT](LICENSE)
 - **内容**（`src/content/docs/` 下的 markdown）：[CC BY-SA 4.0](LICENSE)
-
-## 🌟 Star History
-
-如果这个模板帮到了你，欢迎 star ⭐ 让更多研究组发现它。
 
 ---
 
 <div align="center">
 
-**Group Reading Wiki** · Built with ❤️ for AI research labs · Powered by [Astro Starlight](https://starlight.astro.build/)
+**Group Reading Wiki** · Built for AI research labs · Powered by [Astro Starlight](https://starlight.astro.build/)
 
 [Top ↑](#group-reading-wiki) · [Agent Guide](AGENT_GUIDE.md) · [English](README.en.md)
 
