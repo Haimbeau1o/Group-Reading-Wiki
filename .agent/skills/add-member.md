@@ -137,3 +137,35 @@ agent：好。
 - ❌ 不假定真实邮箱 / 联系方式
 - ❌ 不删 alumni 文件（改 status 即可）
 - ❌ 不自动 commit / push
+
+## 与其他 skill 的衔接
+
+- ✅ **add-member 完成后**主动询问是否进入 [`personalized-onboarding`](./personalized-onboarding.md) — 给新成员生成第一周阅读路径（按其 research-interests）
+- ✅ **首次 init 后建核心成员**走 [`first-week-after-init`](./first-week-after-init.md) 循环 3，而非直接 add-member（前者多了 owner 关联到 themes 的步骤）
+
+## frontmatter 字段约定（与 `new-member.mjs` 一致）
+
+- `role`: **中文值** — `大导师` / `小导师` / `博士生` / `硕士生`（不要写英文 `pi` / `phd` 等，会过不了 schema）
+- `research-interests`: 字段名带连字符（YAML 不需 quote）；值是字符串列表
+- `status`: `active` / `alumni` / `visitor`
+- `year`: 仅博/硕填，整数
+- `cluster`: 选填字符串（按 `.agent/context/role-model.md` 决策树）
+
+## Alumni / 离开协议（补充）
+
+`status: alumni` 后**额外要做**（避免 alumni 仍出现在主分组 sidebar）：
+
+```yaml
+# frontmatter 加：
+sidebar:
+  hidden: true   # 不在 sidebar 显示，但 URL 仍可访问当档案
+```
+
+## 静态扫描发现总结（2026-05）
+
+未做端到端 dogfood（add-member 已在 cycle-3 时随 first-week 走过一次），静态扫 4 处补强：
+
+1. ✅ 加了与 `personalized-onboarding` 衔接的 next-step 协议
+2. ✅ 加了 frontmatter 字段约定段（role 必须中文、research-interests 字段名）
+3. ✅ alumni 状态加 `sidebar.hidden: true` 协议
+4. ✅ 与 `first-week-after-init` 循环 3 的边界明确
