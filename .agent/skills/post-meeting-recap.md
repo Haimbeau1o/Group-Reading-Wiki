@@ -92,7 +92,8 @@ pnpm verify
 
 - ✅ Live notes 至少 5 条 bullet（一节会议讨论比这少说明 transcript 太短或没消化好）
 - ✅ Key insights 3-7 条，每条都是抽象 take-away（不是事实）
-- ✅ Action items 都有 @ 和具体动作
+- ✅ Action items 都有 markdown-link `@`、具体动作、**具体截止周次**（`W22` 而非"下周"）
+- ✅ frontmatter 的 `status` 已从 `live` 改成 `archived`
 - ✅ verify 通过
 - ✅ frontmatter 没有重复 key
 
@@ -153,3 +154,15 @@ agent：好。
 - ❌ 不改 Pre-read 段（那是会前的）
 - ❌ 不编造 transcript 没有的内容
 - ❌ 不自动 git commit / push
+
+## 演练发现总结（2026-W19 dogfood）
+
+首次端到端跑通。改进点：
+
+1. **@username 必须是 markdown link 而非裸文本**：写成 `[@phd-senior-1](/members/phd-senior-1/)`，不要写 `@phd-senior-1`，否则不渲染成可点链接。本文档示例已修正。
+2. **Live notes 顶部加 transcript 溯源行**：写一行 `> 由 post-meeting-recap skill 从会议 transcript 抽取，PI/带读人请校对。`，方便 PI 知道这是 agent 起草、需要校对（也可加入 transcript 文件路径或 hash）。
+3. **Action items 必须带具体截止周次**：`截止 W22` / `截止 W20` 这种硬日期，不要 `截止下周` / `尽快`。已加入检查点。
+4. **status 字段是项目约定**：`status: archived` 不是 starlight schema 强校验，verify 不会 catch。skill 必须主动改。
+5. **时段切分允许重叠**：transcript 时间戳常前后重叠（讨论延伸），切分时按**主题**而非严格时间区间（同一主题的发言放一段，时间区间标"约 14:15–14:30"）。
+6. **Pre-read 段不动 + 但讨论中回答的 pre-read 问题应在 Live notes 里回链**：例如带读人的引导问题 #3 在会议中被讨论了，Live notes 段应在对应时段标"回应引导问题 #3"，让读者前后串得起来。
+7. **Key insights 要"可被复用到其他 paper / project"**：判断标准 — 这条 insight 拿到下一篇 paper 还能用吗？能 → 留；只是事实 → 移到 Live notes。本次 5 条都通过这个测试（如"算力预算重分配"可复用到 DPO / KTO 评估）。

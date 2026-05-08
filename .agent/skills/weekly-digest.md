@@ -90,3 +90,19 @@ sidebar:
 - ❌ 不替成员写 reading log 内容
 - ❌ 不暴露 internal/ 路径里的内容（如果将来加了）
 - ❌ 不自动发到 Slack（**只生成文本，让用户复制粘贴**）
+
+## 演练发现总结（2026-W19 dogfood）
+
+首次端到端跑通。**重要踩坑**：
+
+1. ⚠️ **`list.mjs --since=Nd` 用 mtime 不可靠**：批量改文件 / 跑 init / git checkout 都会刷新 mtime，导致 digest 把全部文件算成"本周新增"。**正确做法**：
+   - **新增文件**：用 `git log --since="7 days ago" --diff-filter=A --name-only --pretty=format:`（filter 出 Added 状态的路径）
+   - **修改文件**：`--diff-filter=M`（Modified）
+   - 或者读文件的 frontmatter `session_date` / 类似字段
+   - `pnpm list:* --since=7d` **只能当快速排序辅助**，不能直接当"本周新增"过滤器
+2. **digest 归档命名规范**：用 lowercase week — `2026-w19.md`（与现有 `2026-w18.md` 一致）。注意文档里的 `<year-week>` 占位易让 agent 写成 `2026-W19.md`，这会破坏归档索引。
+3. **多 session 周的处理**：如果一周有 2+ session（罕见，但调度滑动会发生），"本周共读"段每个 session 各一块，主 insight 各抽一条。
+4. **Slack 版字符上限按显示字符算**：markdown link 在 Slack 渲染后是显示文本字符数，反引号 / 加粗符号不算入显示。目标 250-400 字按**渲染后**字符数。
+5. **digest 与 post-meeting-recap 的边界**：digest 不重写 Key insights，**只挑一条最有信号的引用回 session**。多于一条会和 session 页 Post-meeting 重复。
+6. **建议建 `scripts/new-digest.mjs` scaffold**（pending）：自动从 session 页的 frontmatter + Post-meeting 抽数据，避免 agent 手写漏字段。当前每次手写有 misalign 风险。
+7. **"💬 本周值得追问的"段最有价值**：是 digest 区别于自动生成 changelog 的关键 — 它强迫 agent 做一次跨 session 的连接（W19 insight ↔ W20 plan），是 PI 最看重的部分。
