@@ -91,14 +91,28 @@ pnpm list:papers --json
 
 → 写进 paper note 的 **方法 + 关键实验**段（**带 caution banner，待 lead review**）
 
-#### 第三遍（1+ 小时，可选）— 虚拟复现
+#### 第三遍（1+ 小时，可选）— 虚拟复现 / 同行交叉验证
 
-agent 能做（**但要慎重**）：
-- 找代码 repo，确认是否公开
-- 找复现报告 / Hugging Face 实现，看是否有人质疑
-- 读 OpenReview / Twitter 高赞讨论作交叉验证
+**强制协议：Agent 必须执行下列搜索，不能跳过**（即使 Pass 1+2 已经读得很仔细）。
 
-→ 写进 paper note 的 **复现性 checklist + Counter-evidence**段
+| 来源 | 搜索方法 | 拿什么 |
+|------|---------|-------|
+| **arXiv abs page** | `https://arxiv.org/abs/<id>` | bib + comments 字段（有时含 venue / 代码链接）|
+| **GitHub** | 搜 `<paper-title> github` 或读 abs/HTML 末尾 footnote 的 repo 链接 | code 公开度 / star 数 / 最近 commit / Issues 里的复现讨论 |
+| **HuggingFace** | 搜 `<model-name> huggingface` 或 `https://huggingface.co/papers/<id>` | 模型 / 数据 是否公开 + 社区评论 |
+| **OpenReview** | 搜 `openreview <paper-title>` | reviewer 评分 + meta-review + author rebuttal（最贴近真相的 ground truth）|
+| **Papers with Code** | `paperswithcode.com/paper/<slug>` | 代码 + 复现实现 + leaderboard 位置 |
+| **Twitter / Hacker News** | 搜 `<arxiv-id>` 或 `<paper-title>` | 同行第一反应（注意筛选）|
+| **同期对照工作** | 搜 abstract 里的关键 method name + "vs" / "compared with" | 谁先做的 / 谁更好 |
+
+Agent **必须**至少跑 GitHub + HuggingFace + OpenReview 三个，把发现写进：
+- 复现性 checklist（具体打勾依据）
+- Counter-evidence 段（找到的对照工作）
+- Lessons learned（如果发现复现争议）
+
+→ 写进 paper note 的 **复现性 checklist + Counter-evidence + 延伸阅读**段
+
+**Pass 3 不是可选**。即使 paper 看起来"太新"或"没人讨论"，搜出"找不到讨论"本身也是信息（说明社区还没接住）。
 
 ### 批判性阅读 — 5 个标准追问（写时落到 take 段引导）
 
@@ -110,17 +124,31 @@ agent 能做（**但要慎重**）：
 
 → 这 5 题是 **take 段的脚手架**，但**不能 agent 自己答**。agent 在 take 段 caution banner 里把这 5 个问题列出来，让 lead 拍立场。
 
-### Active reading 提示词（agent 自查清单）
+### Active reading 提示词（agent 自查闭环 — 强制）
 
-读完 paper（哪怕只是 abstract）后，agent 在生成内容前**必须能口头回答**：
+Agent 在生成内容前**必须显式过一遍下列 5 题**，每题在脑里给"能答 / 不能答"判断：
 
-- [ ] 一句话讲清楚 paper 的"招"是什么
-- [ ] 一句话讲清楚 paper 没解决的最大问题
-- [ ] 这篇用什么 benchmark？数字相对前 SOTA 提升多少？
-- [ ] 代码 / 数据 / 模型权重哪些公开？
-- [ ] 我能用一段话向**没读过这篇**的同事解释这工作吗
+- [ ] **Q1** 一句话讲清楚 paper 的"招"是什么
+- [ ] **Q2** 一句话讲清楚 paper 没解决的最大问题
+- [ ] **Q3** 这篇用什么 benchmark？数字相对前 SOTA 提升多少？
+- [ ] **Q4** 代码 / 数据 / 模型权重哪些公开？
+- [ ] **Q5** 我能用一段话向**没读过这篇**的同事解释这工作吗
 
-回答不出来 = agent 没真读懂 → 要么再读，要么标 TODO 让 lead 读。
+#### 自查未过的处理协议（强制）
+
+| 不能答的题 | Agent 必须做 |
+|-----------|------------|
+| Q1 / Q2 / Q5 | **多抓 1-2 个 chunk**（重点读 Intro / Discussion / Conclusion），最多 5 个 chunk 上限。仍答不出 → 在 paper note 顶部加 caution: "agent 未充分读懂"，明确指向 lead |
+| Q3 | 读 Experiments / Eval 章节的 chunk；找到主结果表（Table 1/2 通常是）+ §1 末尾的 headline numbers |
+| Q4 | 走 Pass 3 协议（GitHub / HF / OpenReview） |
+
+**禁止**：自查未过仍直接起草成稿。情愿少写、多标 TODO，也不要编。
+
+#### 上限熔断
+
+Agent 累计抓 chunk ≥ 5 仍 Q1+Q2+Q5 不能答 → **停止起草**，输出："agent 抓 5 chunk 仍未读懂 \<paper\>，建议 lead 自己读 paper PDF 后填核心段。我已填的内容仅是 abstract 派生 + Pass 3 同行交叉验证。"
+
+这是诚实信号 —— 比写一篇看似完整但事实错乱的笔记好。
 
 ---
 
@@ -178,13 +206,51 @@ PI / 带读人完成 review 的契约：
 
 `pnpm verify` 在未来版本可以加 gate：含 caution banner 的 paper 不能 `status: published`。
 
-### 4. 自动跨链发现
+### 4. 自动跨链发现 — 强制 add-concept 联动
 
-Agent 读 paper 内容后，找出：
+Agent 起草完后，**强制走 5 步**：
 
-- **概念术语**：检查 `concepts/` 是否已有 → 有则链 `[X](/concepts/x/)`，无则**记下来报给 PI** "这些术语没词典：X, Y, Z。要建吗？"（触发 `add-concept` skill）
-- **引用的关键论文**：检查 `papers/` 是否已有 → 有则链 → 没有则建议加到 "Counter-evidence" 或 "延伸阅读"
-- **方法名 / 模型名**：暂不强制建索引，只是 plain text
+#### 4.1 枚举候选术语
+
+从笔记里抽出**所有**可能是"概念"的名词短语 —— 优先：缩写（GRPO / MoE / RLHF）、方法名（mode fusion / strong-to-weak distillation）、新数据集（AIME'24 / LiveCodeBench）。
+
+不要漏掉 figures / equations 里出现的命名实体。
+
+#### 4.2 与现有词典比对
+
+```bash
+ls src/content/docs/concepts/
+```
+
+把候选术语对照已有 slugs（去掉空格、小写、连字符）。
+
+#### 4.3 输出 3 类清单（必须给 PI）
+
+```text
+🔗 已链：A, B  (词典已有，paper note 里加链)
+🆕 新术语：X, Y, Z  (词典缺，建议建词条)
+🟡 边界：P, Q  (太通用如 "neural network"，不必建)
+```
+
+#### 4.4 强制询问 PI（不能跳过）
+
+> "新术语 X / Y / Z 词典里没有。要建吗？我可以一次为你过 N 个 add-concept 流程：每个 1 分钟。"
+
+PI 回答：
+- "全建" → 逐个走 `add-concept` skill
+- "只建 X" → 单条走
+- "都不建" → 在 paper note 的"延伸阅读 → 相关概念"段保留为纯文本，标 TODO 待词典建好后回链
+
+#### 4.5 触发 add-concept
+
+每个被选中的术语，**调用 add-concept skill**（参 `add-concept.md`）。每个 concept 完成后回到 paper note 把术语换成 `[X](/concepts/x/)` 链接。
+
+---
+
+### 4-bis. 引用的关键论文
+
+- 检查 `papers/` 是否已有 → 有则链 → 没有则**建议**加到 "Counter-evidence" 或 "延伸阅读"
+- **方法名 / 模型名**：暂不强制建索引，plain text 即可
 
 ### 5. 主线页双向更新
 
@@ -316,3 +382,10 @@ agent：（走 add-concept skill）
 - **Counter-evidence 段是质量分水岭**。无 counter-evidence 的 paper note 容易变成宣传册。Agent 主动找 1–2 篇对照能让 wiki 显著更可信。
 - **复现性 checklist 必填**。哪怕全打 ✗，也比留空有用 —— 是 wiki 对学生说"我们关心可复现"的 signal。
 - **三遍阅读法的边界**：第三遍（虚拟复现）agent 的判断力差于人，能做的是 "找信息源汇报"，不是 "下结论"。
+
+### 演练发现（Qwen3 二刷 cycle 4）
+
+- **#15 修复**：原 skill 把 Pass 3 写成"可选" → agent 真演练时跳过。已改为**强制协议**+具体来源表（GitHub / HF / OpenReview / Papers with Code 等）。
+- **#16 修复**：原 skill 提到 add-concept 但只是"记下来报给 PI" → agent 容易遗忘。已改为**强制 5 步联动**：枚举 → 比对 → 三类清单 → 询问 PI → 触发 add-concept。
+- **#17 修复**：原 skill 给了 5 题 active-reading checklist 但没说"答不出怎么办" → agent 会跳过。已改为**强制自查闭环 + 上限熔断（5 chunk 仍读不懂则停起草）**。这条是 agent 诚实信号的核心。
+- **新指导原则**：起草段一定带 "已读 §X + §Y" 来源标注。这次 Qwen3 笔记每个 caution banner 都标了源章节，让 lead review 时可定位。
