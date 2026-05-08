@@ -21,10 +21,32 @@
 | | 关联主线 | 哪条 `/themes/` 主线，可建议 |
 | | 会议时间 / 地点 | 默认填占位，由用户改 |
 
+### 主线不相关怎么办（常见）
+
+如果 paper 跟现有主线都不强相关（如 Mixtral 跟 reflective-alignment）：
+
+1. **优先选项**：在 session 页的关联主线标 "弱相关"，仍指向现有主线 + 说明为什么贴（主线的开放问题可能哪里暴露）。这是默认。
+2. **进阶选项**：如果连续 2-3 篇 paper 都不强相关 → push-back，让 PI 考虑是否该建新主线（走 `add-theme` skill）。
+3. **不要选**：不要默认推到 `themes: []` 空数组 —— 空主线意味着 "孤点 paper"，让 wiki 看起来 不成体系。
+
 ## 前置检查
 
-1. 用 `pnpm list:members --json` 确认带读人 slug 真的存在
-2. 用 `pnpm list:sessions --json` 看是否已有同名 session（避免重复）
+⚠️ **必须用 `pnpm -s`**（silent）调用 list 脚本，否则 pnpm 会在 stdout 加脚本头，JSON 被脏。
+
+```bash
+# 检查带读人
+real_member=$(pnpm -s list:members --json | jq -r '.items[] | select(.slug=="<lead-slug>")')
+# 检查同名 session
+exists=$(pnpm -s list:sessions --json | jq -r '.items[] | select(.session_week=="<week>")')
+```
+
+JSON 返回 shape：
+
+```json
+{"subcommand": "members", "count": 2, "items": [{"slug": "...", ...}]}
+```
+
+字段名须注意：session 的周次字段是 **`session_week`**，不是 `week`。
 
 ## 执行步骤
 
@@ -47,7 +69,21 @@ pnpm new:session <week> <paper-slug> --lead=<member-slug> --paper=papers/<paper-
 
 4. **更新首页 banner**：
 
-修改 `src/content/docs/index.mdx` 的"📅 本周共读" LinkCard，把 href 和 title 指到新 session。
+修改 `src/content/docs/index.mdx` 的 "📅 本周共读" 区块。
+
+**首次**（init:group 后第一次建 session）：占位是 “> 还没有 session。运行 `pnpm new:session ...`”，需完整替换为 LinkCard：
+
+```mdx
+## 📅 本周共读
+
+<LinkCard
+  title="W<XX> · <Paper Title>"
+  description="带读：<lead> · <时间> · 重点 <章节提示>"
+  href="/sessions/<week>-<slug>/"
+/>
+```
+
+**后续**：已有 LinkCard，只需 edit `title` / `description` / `href` 三个字段。
 
 5. **跑 verify**：
 
@@ -196,3 +232,11 @@ pnpm verify
 ```
 
 如果有 error，**必须修完再说"完成"**。fail-fast 在 agent 流程里特别重要，否则错误会传染（坏链接被复制粘贴到下个 session）。
+
+### 7. 演练发现（cycle 5.A · Mixtral W10 演练）
+
+- **#24**：原 skill 输入清单没说"主线都不强相关怎么办"。已加三档处理协议（默认 / 进阶 / 不要选）。
+- **#25**：原 skill 写 `pnpm list:members --json`，实际 pnpm 默认会在 stdout 加脚本头，JSON 被脏。统一改为 `pnpm -s list:*`。
+- **#26**：原 skill 没说返回 shape 是 `{subcommand, count, items}`，agent 第一次跑会 `string indices must be integers` 报错。已加示例 + shape 文档。
+- **#27**：session 周次字段名实际是 `session_week`，不是 `week`。已修文档。
+- **#28**：首页 banner 第一次没 LinkCard 给 edit（占位是纯文字）。已加首次 / 后续两种处理。
