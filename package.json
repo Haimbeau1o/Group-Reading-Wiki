@@ -16,6 +16,7 @@
     "new:paper": "node scripts/new-paper.mjs",
     "new:member": "node scripts/new-member.mjs",
     "new:theme": "node scripts/new-theme.mjs",
+    "new:concept": "node scripts/new-concept.mjs",
     "init:group": "node scripts/init-group.mjs",
     "update:group-config": "node scripts/update-group-config.mjs",
     "smoke-test:fork": "node scripts/smoke-test-fork.mjs",

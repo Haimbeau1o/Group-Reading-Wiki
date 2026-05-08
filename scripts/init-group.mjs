@@ -332,6 +332,10 @@ if (!KEEP_DEMO) {
   //      这是 template-safe 的关键：让保留的 welcome/onboarding/roadmap 等
   //      不再谈 Leon's Group 的 DeepSeek 专题 / 具体主线 / 具体成员
   sanitizeDemoLinks();
+
+  // 5.6.1 概念词典：保留通用技术内容，但清洗 "在 DeepSeek 里的用法" 段
+  //       和 concepts/index.md 里的 demo-specific 描述
+  sanitizeConceptsDemo();
 }
 
 // 5.7. 中和 giscus 配置（repoId / categoryId 是原模板 repo 的，用户必须重配）
@@ -610,6 +614,75 @@ function sanitizeDemoLinks() {
     if (content !== before && !DRY_RUN) {
       writeFileSync(f, content);
       log(`🧹 sanitized links in ${f.replace(ROOT + '/', '')}`);
+    }
+  }
+}
+
+/**
+ * 清洗概念词典里的 demo-specific 内容：
+ *
+ * 1. 每个 concepts/*.md（除 index.md）里的 `## 在 DeepSeek 里的用法` 段
+ *    （到下一个 `## ` 为止）替换成空的 `## 在我们组的用法` + TODO 占位，
+ *    让 fork 用户亲自补"我们组关心的视角"。
+ * 2. concepts/index.md 的"已上线（首批 N 条）"列表里的 em-dash 后描述
+ *    （含 DeepSeek-V3/V2/R1/Math 这种 demo 注解）截断到只剩词条名，
+ *    保留链接结构供新组继续用。
+ *
+ * 不动正文里的技术内容、不动延伸阅读里的 paper 链接 —— 那些是事实性的
+ * 历史出处，对任何 AI 组都有参考价值（DeepSeekMoE / DeepSeek-V3 是公开论文）。
+ */
+function sanitizeConceptsDemo() {
+  const conceptsDir = join(ROOT, 'src/content/docs/concepts');
+  if (!existsSync(conceptsDir)) return;
+
+  // 1. 处理每个词条文件
+  const conceptFiles = walkFiles(conceptsDir, p => /\.md$/.test(p) && !/index\.md$/.test(p));
+  for (const f of conceptFiles) {
+    let content = readFileSync(f, 'utf-8');
+    const before = content;
+
+    // 替换 `## 在 DeepSeek 里的用法\n...(到下一个 ## 或 EOF)` 段
+    content = content.replace(
+      /## 在 DeepSeek 里的用法\n[\s\S]*?(?=\n## |$)/,
+      `## 在我们组的用法
+
+> 📝 TODO（PI / 带读人）：这个概念在我们组的研究里怎么用？
+>
+> - 我们关心的子问题是 …
+> - 我们读过的相关 paper：[paper-A](/papers/) · [paper-B](/papers/)
+> - 我们的开放问题：…
+`
+    );
+
+    if (content !== before && !DRY_RUN) {
+      writeFileSync(f, content);
+      log(`🧹 sanitized concepts/${f.split('/').pop()} (replaced demo-用法 section)`);
+    }
+  }
+
+  // 2. 处理 concepts/index.md
+  const indexPath = join(conceptsDir, 'index.md');
+  if (existsSync(indexPath)) {
+    let content = readFileSync(indexPath, 'utf-8');
+    const before = content;
+
+    // "已上线（首批 N 条）" → "已上线词条"（去掉首批 N 条字样）
+    content = content.replace(/## 已上线（首批[^）]+）/, '## 已上线词条');
+
+    // 列表项里 em-dash 后的 demo 描述 → 截断到只剩词条名
+    // 例：- [**MoE**](/concepts/moe/) — Mixture of Experts，DeepSeekMoE 的细粒度...
+    //     → - [**MoE**](/concepts/moe/) — Mixture of Experts
+    content = content.replace(
+      /^(- \[\*\*[^*]+\*\*\]\(\/concepts\/[^)]+\/\) — [^，,。\n]+)[，,][^\n]*$/gm,
+      '$1'
+    );
+
+    // 写作模板里的 `## 在 DeepSeek 里的用法` → `## 在我们组的用法`
+    content = content.replace(/## 在 DeepSeek 里的用法/g, '## 在我们组的用法');
+
+    if (content !== before && !DRY_RUN) {
+      writeFileSync(indexPath, content);
+      log(`🧹 sanitized concepts/index.md (cleaned demo-specific descriptions)`);
     }
   }
 }
