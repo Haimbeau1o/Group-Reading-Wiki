@@ -580,6 +580,7 @@ function sanitizeDemoLinks() {
   rewriteRoadmapMd();
   rewritePapersIndexMd();
   rewriteOnboardingMd();
+  rewriteEnIndexMdx();
 
   // 正则兜底：扫描所有保留的 .md / .mdx，把 demo-pattern 链接去掉
   const allFiles = walkFiles(
@@ -641,6 +642,17 @@ function sanitizeConceptsDemo() {
     let content = readFileSync(f, 'utf-8');
     const before = content;
 
+    // E5 cold-start fix: 删除指向已被 init 删除的 deepseek/ 路径的死链接行
+    // 例：`具体见 \`@/src/content/docs/deepseek/v4-research.md\` 的对应章节，以及原论文 §2.1。`
+    content = content.replace(
+      /^具体见 `@\/src\/content\/docs\/deepseek\/[^`]+`[^\n]*\n/gm,
+      ''
+    );
+    content = content.replace(
+      /^站内：\[V4 [^\]]+\]\(\/deepseek\/[^)]+\)\n/gm,
+      ''
+    );
+
     // 替换 `## 在 DeepSeek 里的用法\n...(到下一个 ## 或 EOF)` 段
     content = content.replace(
       /## 在 DeepSeek 里的用法\n[\s\S]*?(?=\n## |$)/,
@@ -701,6 +713,12 @@ function rewriteWelcomeMd() {
   // 删除 demo-note 段（:::note[这是一个模板 demo] ... :::）
   content = content.replace(/:::note\[这是一个模板 demo\][\s\S]*?:::\n\n?/, '');
 
+  // E1 cold-start fix: 通用 prose 里 "DeepSeek、GPT、Gemini、Llama" → 去掉 DeepSeek
+  content = content.replace(
+    /读前沿 AI 论文（尤其是 DeepSeek、GPT、Gemini、Llama 这种工程量爆表的模型论文）/,
+    `读前沿 AI 论文（GPT / Claude / Gemini / Llama / Qwen 这种工程量爆表的大模型论文）`
+  );
+
   // 替换"推荐阅读路径"整节（到下一个 ## 为止）
   content = content.replace(
     /## 推荐阅读路径\n[\s\S]*?(?=\n## |$)/,
@@ -740,8 +758,21 @@ function rewritePiMd() {
 `
   );
 
+  // E3 cold-start fix: PI takes 段（"## XXX takes（不规律的研究观点）"）里
+  // 留有 demo 的 ### 2026-WXX 占位条目（long-context / V4 §8 等），整段重置为占位
+  content = content.replace(
+    /## [^\n]*takes（不规律的研究观点）\n[\s\S]*?(?=\n## )/,
+    `## PI 的研究观点（不规律更新）
+
+> **使用建议**：每月 1–2 条即可，每条 1–3 段。这是组员最爱看的内容。
+
+> 待 PI 填：第一条不规律研究观点。例如对最近某篇 paper 的态度、对组内方向的判断、对某个工程问题的反直觉看法。
+
+`
+  );
+
   if (!DRY_RUN) writeFileSync(p, content);
-  log(`✏ rewrote members/pi.md (stripped demo theme/member links)`);
+  log(`✏ rewrote members/pi.md (stripped demo theme/member links + reset takes section)`);
 }
 
 function rewriteRoadmapMd() {
@@ -749,14 +780,21 @@ function rewriteRoadmapMd() {
   if (!existsSync(p)) return;
   let content = readFileSync(p, 'utf-8');
 
-  // 删除 "DeepSeek 专题（v0.1）" block（到下一个 ### 为止）
+  // 删除 "DeepSeek 专题（v0.X）" block（到下一个 ### 或 ## 为止）
+  // E2 cold-start fix: v0.1 v0.2 都要删
   content = content.replace(
-    /### DeepSeek 专题（v0\.1）\n[\s\S]*?(?=\n### |\n## )/,
+    /### DeepSeek 专题（v0\.\d+）\n[\s\S]*?(?=\n### |\n## )/g,
+    ''
+  );
+
+  // E2 cold-start fix: 历史更新日志里 demo 行删除
+  content = content.replace(
+    /\| \d{4}-\d{2}-\d{2} \| v0\.1 \| 站点首发，迁入 DeepSeek 三篇深度文章 \|\n/,
     ''
   );
 
   if (!DRY_RUN) writeFileSync(p, content);
-  log(`✏ rewrote roadmap.md (removed DeepSeek demo block)`);
+  log(`✏ rewrote roadmap.md (removed DeepSeek demo blocks v0.1/v0.2 + changelog row)`);
 }
 
 function rewritePapersIndexMd() {
@@ -820,6 +858,45 @@ function rewriteOnboardingMd() {
 
   if (!DRY_RUN) writeFileSync(p, content);
   log(`✏ rewrote onboarding.md (stripped demo-specific examples)`);
+}
+
+/**
+ * E4 cold-start fix: en/index.mdx 整体重置为通用英文首页。
+ * 原 demo 大量提"DeepSeek track / DeepSeek-V4 deep dive"。
+ */
+function rewriteEnIndexMdx() {
+  const p = join(ROOT, 'src/content/docs/en/index.mdx');
+  if (!existsSync(p)) return;
+  const content = `---
+title: ${NEW_NAME} · Reading Hub
+description: Open wiki & forum for collaboratively studying frontier AI papers.
+template: splash
+hero:
+  tagline: Turn every dense paper into a living document we read, question, and improve together.
+  actions:
+    - text: Browse research themes
+      link: /en/
+      icon: right-arrow
+      variant: primary
+---
+
+> 🌐 **English content is being seeded.** Most pages are still Chinese-only.
+> Want to translate a page? Click **Edit page on GitHub** at the bottom of any article.
+
+## What is this?
+
+An open, contributable research wiki with **inline discussions** on every page (powered by GitHub Discussions via Giscus).
+
+We focus on the kind of papers that are too dense to read alone: GPT / Claude / Gemini system cards, Llama / Qwen / Mistral, and the architectural / training-systems work behind them.
+
+## How to help
+
+- Open a discussion at the bottom of any page
+- Send a PR — every page has an **Edit page on GitHub** link at the bottom
+- Translate Chinese articles into English under \`src/content/docs/en/\`
+`;
+  if (!DRY_RUN) writeFileSync(p, content);
+  log(`✏ rewrote en/index.mdx (E4: removed DeepSeek-specific English copy)`);
 }
 
 /**
