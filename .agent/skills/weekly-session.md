@@ -67,32 +67,29 @@ pnpm new:session <week> <paper-slug> --lead=<member-slug> --paper=papers/<paper-
    - 选读：相关概念词典 / 历史 sessions
    - 引导问题：根据 paper 摘要 + 关联主线**生成 3 个**有深度的问题（不是 "what is X"，而是 "why X over Y" / "what's the trade-off"）
 
-3-bis. **写"关联背景"段（cycle-8 起强制）**
+3-bis. **写"关联背景"段（cycle-8 起强制，cycle-9 起一条命令搞定）**
 
-在 Pre-read 之前 / `## 0. 关联背景` 段，调用 `context:for` 拿邻居：
+在 Pre-read 之前 / `## 0. 关联背景` 段，用 cycle-9 加的 `--format=session-bg` 直接产 markdown：
 
 ```bash
-pnpm -s context:for papers/<paper-slug> --json --depth=2
+pnpm -s context:for papers/<paper-slug> --format=session-bg
 ```
 
-把返回的：
-- `concepts`（这篇 paper 用到的概念）→ 列成"会前可补的概念词典"
-- `sessions`（之前讨论过这篇 / 同 theme 的历史 session）→ 列成"前情回顾"
-- `related_papers`（同方向已读 paper）→ 列成"同方向对照阅读"
-- 同主线下的其他 papers → 列成"主线坐标"
+输出是可直接粘贴的 markdown，含 caution banner + **概念前置** + **前情回顾** + **主线坐标** + **同方向对照阅读** 四段。Lead 只需按每条后面的 `📝 lead 补一行定位` 提示补文字，然后删 caution。
 
-**典型流程**：
+通用场景（不限 session）用 `--md` 拿结构化 markdown：
 
-```
-agent: 跑 context:for → 拿到 [grpo, moe, mla] 三个 concept + W18 历史 session
-       → 在 session 页 § "0. 关联背景" 写：
-         > 本次共读建立在 W18 (DeepSeek-V4) 的基础上：
-         > - 概念前置：[GRPO](/concepts/grpo/) · [MoE](/concepts/moe/) · [MLA](/concepts/mla/)
-         > - 前情：[W18 · DeepSeek-V4](/sessions/2026-w18-deepseek-v4/) §3 讨论了 V4 的 long-context attention
-         > - 同主线：本主线 [test-time-reasoning](/themes/test-time-reasoning/) 还有 N 篇待读
+```bash
+pnpm -s context:for <slug> --md [--depth=2]
 ```
 
-这一段是"会前 5 分钟把没参会的人拉到坐标系"的关键。**不要让 agent 编**——只用 context:for 实际返回的邻居写。
+**原始人读模式**（快速扫一眼不打算贴）：
+
+```bash
+pnpm -s context:for papers/<paper-slug>        # 默认 depth=1，彩色终端列表
+```
+
+> 只有"可选扩展"段可考虑 `--depth=2` 多挑 1-2 条；2 跳邻居信噪比低（见 #35），不要一股脑全贴。
 
 3-ter. **填 frontmatter 知识图字段**
 

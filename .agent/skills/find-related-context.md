@@ -42,11 +42,17 @@ pnpm -s list:papers   --json | jq '.items[] | select(.title | test("GRPO"; "i"))
 ### 2. 跑 context:for
 
 ```bash
-# 1 跳邻居（最常用）
+# 1 跳邻居（最常用，人读终端输出）
 pnpm -s context:for <slug>
 
 # 2 跳扩散（写主线 / onboarding 用）
 pnpm -s context:for <slug> --depth=2
+
+# markdown 输出（贴进任何 md 文档）— cycle-9
+pnpm -s context:for <slug> --md
+
+# session 专用："0. 关联背景" 段预格式化 — cycle-9
+pnpm -s context:for papers/<slug> --format=session-bg
 
 # json 自动化（脚本里嵌入）
 pnpm -s context:for <slug> --json --depth=2

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * pnpm context:for <slug> [--depth=N] [--json]
+ * pnpm context:for <slug> [--depth=N] [--json | --md | --format=session-bg]
  *
  * 给定一个节点 slug，返回它在知识图中的 N 跳邻居。
  * agent 写新内容（paper note / session / theme refresh 等）前调用，拿到结构化上下文。
@@ -39,6 +39,8 @@ const flags = Object.fromEntries(
 );
 
 const isJson = !!flags.json;
+const isMd = !!flags.md || flags.format === 'md';
+const isSessionBg = flags.format === 'session-bg';
 const depth = flags.depth ? Math.max(1, parseInt(flags.depth, 10)) : 1;
 
 if (positional.length === 0) {
@@ -94,6 +96,10 @@ for (let d = 1; d <= depth; d++) {
 // ───── 输出 ─────
 if (isJson) {
   process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+} else if (isSessionBg) {
+  printSessionBackground(result);
+} else if (isMd) {
+  printMarkdown(result);
 } else {
   printHuman(result);
 }
@@ -208,4 +214,95 @@ function printHuman(r) {
     }
   }
   console.log('');
+}
+
+/**
+ * --md: 泛用 markdown 输出。agent 可直接贴到任何 markdown 文档。
+ */
+function printMarkdown(r) {
+  const TYPE_LABEL = { papers: 'Papers', concepts: 'Concepts', themes: 'Themes', members: 'Members', sessions: 'Sessions' };
+  const c = r.center;
+  console.log(`## ${c.title}`);
+  console.log('');
+  console.log(`- **type**: ${c.type}`);
+  console.log(`- **url**: [${c.url}](${c.url})`);
+  if (c.description) console.log(`- **description**: ${c.description}`);
+  console.log('');
+  for (let d = 1; d <= depth; d++) {
+    const layer = r[`depth_${d}`];
+    if (!layer) continue;
+    console.log(`### ${d} 跳邻居`);
+    console.log('');
+    for (const [type, items] of Object.entries(layer)) {
+      console.log(`**${TYPE_LABEL[type] || type}** (${items.length})`);
+      console.log('');
+      for (const it of items) {
+        const arrow = it.direction === 'out' ? '→' : '←';
+        console.log(`- ${arrow} [${it.title}](${it.url}) — \`${it.rel}\``);
+      }
+      console.log('');
+    }
+  }
+}
+
+/**
+ * --format=session-bg: 专门给 weekly-session 的 "0. 关联背景" 段用的格式。
+ * 产出 agent 可直接贴进 session markdown 的 4 段（概念前置 / 前情 / 主线 / 其他）。
+ * 只用 depth_1；depth_2 默认不进 session-bg（信噪比低，见 skill #35）。
+ */
+function printSessionBackground(r) {
+  const c = r.center;
+  const layer = r.depth_1 || {};
+  console.log(`## 0. 🔗 关联背景`);
+  console.log('');
+  // 把内部 singular slug (paper/xx) 还原成用户习惯的复数写法 (papers/xx)
+  const displaySlug = String(c.slug).replace(/^(paper|concept|theme|member|session)\//, (_, t) => `${t}s/`);
+  console.log(`:::caution[🤖 Agent 起草 · 由 \`pnpm context:for ${displaySlug} --format=session-bg\` 自动产出]`);
+  console.log(`下面的链接 100% 来自构建期知识图；文字解读由 lead 校对后删 caution。`);
+  console.log(':::');
+  console.log('');
+
+  const concepts = layer.concepts || [];
+  if (concepts.length) {
+    console.log(`**概念前置**（建议会前过一遍词典页）：`);
+    console.log('');
+    for (const it of concepts) {
+      console.log(`- [${it.title}](${it.url}) — 📝 lead 补一行定位`);
+    }
+    console.log('');
+  }
+
+  const sessions = (layer.sessions || []).filter(s => s.direction === 'in' || s.rel === 'discusses_paper');
+  if (sessions.length) {
+    console.log(`**前情回顾**：`);
+    console.log('');
+    for (const it of sessions) {
+      console.log(`- [${it.title}](${it.url}) — 📝 lead 补讨论要点`);
+    }
+    console.log('');
+  }
+
+  const themes = layer.themes || [];
+  if (themes.length) {
+    console.log(`**主线坐标**：`);
+    console.log('');
+    for (const it of themes) {
+      console.log(`- [${it.title}](${it.url}) — 本次仍在此主线下`);
+    }
+    console.log('');
+  }
+
+  const papers = (layer.papers || []).filter(p => p.rel === 'related_paper');
+  if (papers.length) {
+    console.log(`**同方向对照阅读**：`);
+    console.log('');
+    for (const it of papers) {
+      console.log(`- [${it.title}](${it.url})`);
+    }
+    console.log('');
+  }
+
+  if (!concepts.length && !sessions.length && !themes.length && !papers.length) {
+    console.log(`> 📝 没有找到知识图邻居。可能原因：(a) \`${c.slug}\` frontmatter 的 \`concept_refs\` / \`themes\` 字段为空；(b) 没跑 \`pnpm build:index\`。`);
+  }
 }

@@ -1,16 +1,23 @@
 #!/usr/bin/env node
 /**
  * pnpm new:session <week> <slug> [--lead=<member>] [--paper=<paper-slug>]
+ *   [--title="<session 标题>"]  # ✨ 显式标题；否则默认 "<week> · <slug>"
  *   [--participants=a,b,c]   # ✨ 知识图：除 lead 外参与者 slug
  *   [--concept-refs=x,y]     # ✨ 知识图：本次重点 concept slug
+ *   [--themes=t1,t2]         # ✨ 显式绑主线；否则从 --paper 自动继承
  *   [--tags=t1,t2]           # ✨
  *
  * 例：
  *   pnpm new:session 2026-W19 mixtral-of-experts --lead=phd-senior-2 --paper=papers/mixtral
+ *   pnpm new:session 2026-W22 r1-followup --paper=papers/deepseek-r1 \
+ *                    --title="W22 · DeepSeek-R1 续讨论"
  *
  * 自动在 src/content/docs/sessions/ 下生成 <week-slug>.md 模板。
+ *
+ * --paper=papers/X 时：若 X.md 的 frontmatter 有 themes，会自动继承到 session
+ * （除非显式传 --themes=... 覆盖）。避免 session 漏挂主线。
  */
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -40,11 +47,35 @@ const conceptRefs = splitCsv(opts['concept-refs']);
 const tags = splitCsv(opts.tags);
 const yamlList = (arr) => arr.length ? '\n' + arr.map(s => `  - ${s}`).join('\n') : ' []';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// themes: 优先 --themes=... 显式；否则若 --paper 指向的文件 frontmatter 有 themes 就继承
+let themes = splitCsv(opts.themes);
+let themesInheritedFrom = '';
+if (themes.length === 0 && opts.paper) {
+  const paperBase = String(opts.paper).replace(/^\/+|\/+$/g, '').replace(/^papers?\//, '');
+  const paperPath = resolve(__dirname, '..', 'src/content/docs/papers', `${paperBase}.md`);
+  if (existsSync(paperPath)) {
+    const raw = readFileSync(paperPath, 'utf-8');
+    const fmMatch = raw.match(/^---\n([\s\S]*?)\n---/);
+    if (fmMatch) {
+      // 极简 YAML：支持 block list `themes:\n  - a\n  - b` 和 flow list `themes: [a, b]`
+      const blockMatch = fmMatch[1].match(/^themes:\s*\n((?:\s+-\s+.+\n?)+)/m);
+      const flowMatch = fmMatch[1].match(/^themes:\s*\[([^\]]*)\]/m);
+      if (blockMatch) {
+        themes = blockMatch[1].split('\n').map(l => l.replace(/^\s+-\s+/, '').trim()).filter(Boolean);
+      } else if (flowMatch) {
+        themes = flowMatch[1].split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
+      }
+      if (themes.length > 0) themesInheritedFrom = `papers/${paperBase}`;
+    }
+  }
+}
+
 const yamlSafe = (s) => /[:#&*!|>%@`,\[\]{}"'\\]/.test(s) ? `"${String(s).replace(/"/g, '\\"')}"` : s;
-const titleY = yamlSafe(`${week} · ${slug}`);
+const titleY = yamlSafe(opts.title || `${week} · ${slug}`);
 const descY = yamlSafe(`${week} 周会共读。带读人：${lead}。`);
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 const outPath = resolve(__dirname, '..', 'src/content/docs/sessions', `${week.toLowerCase()}-${slug}.md`);
 
 if (existsSync(outPath)) {
@@ -63,7 +94,7 @@ session_week: ${week}
 session_date: ${today}
 lead: ${lead}
 paper_refs:${paperRef}
-themes: []
+themes:${yamlList(themes)}
 participants:${yamlList(participants)}
 concept_refs:${yamlList(conceptRefs)}
 tags:${yamlList(tags)}
@@ -169,8 +200,14 @@ status: upcoming
 writeFileSync(outPath, content);
 
 if (opts.json) {
-  process.stdout.write(JSON.stringify({ ok: true, action: 'create', file: outPath, slug, week, lead }) + '\n');
+  process.stdout.write(JSON.stringify({
+    ok: true, action: 'create', file: outPath, slug, week, lead,
+    themes, themes_inherited_from: themesInheritedFrom,
+  }) + '\n');
 } else {
   console.log(`✓ Created ${outPath}`);
+  if (themesInheritedFrom) {
+    console.log(`  ℹ themes 从 ${themesInheritedFrom} 继承：[${themes.join(', ')}]`);
+  }
   console.log(`  Edit it, then commit: git add ${outPath}`);
 }
