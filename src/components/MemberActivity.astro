@@ -1,0 +1,95 @@
+---
+// 成员页底部"参与记录"段。
+// 设计契约：docs/WIKI_GRAPH_DESIGN.md §5.3
+import { loadGraph, pathnameToNodeId, expandNodes } from '../lib/knowledge-graph.mjs';
+
+const graph = loadGraph();
+const nodeId = pathnameToNodeId(Astro.url.pathname);
+
+let bucket = null;
+if (nodeId?.startsWith('member/')) {
+  const slug = nodeId.replace('member/', '');
+  bucket = graph.by_member[slug] || null;
+}
+
+const led = bucket ? expandNodes(graph, bucket.led_sessions) : [];
+const participated = bucket ? expandNodes(graph, bucket.participated_sessions) : [];
+const owns = bucket ? expandNodes(graph, bucket.owns_themes) : [];
+const coOwns = bucket ? expandNodes(graph, bucket.co_owns_themes) : [];
+const themeRefs = bucket ? expandNodes(graph, (bucket.theme_refs || []).map(s => `theme/${s.replace(/^theme\//, '')}`)) : [];
+
+const hasAny = led.length || participated.length || owns.length || coOwns.length || themeRefs.length;
+---
+
+{hasAny && (
+  <aside class="kg-member not-content">
+    <h2>📋 参与记录</h2>
+
+    {led.length > 0 && (
+      <section>
+        <h3>带读的 sessions（{led.length}）</h3>
+        <ul>{led.map(s => <li><a href={s.url}>{s.title}</a></li>)}</ul>
+      </section>
+    )}
+
+    {participated.length > 0 && (
+      <section>
+        <h3>参与的 sessions（{participated.length}）</h3>
+        <ul>{participated.map(s => <li><a href={s.url}>{s.title}</a></li>)}</ul>
+      </section>
+    )}
+
+    {(owns.length > 0 || coOwns.length > 0) && (
+      <section>
+        <h3>负责的研究主线</h3>
+        <ul>
+          {owns.map(t => <li><a href={t.url}>{t.title}</a> <span class="kg-rel">owner</span></li>)}
+          {coOwns.map(t => <li><a href={t.url}>{t.title}</a> <span class="kg-rel">co-owner</span></li>)}
+        </ul>
+      </section>
+    )}
+
+    {themeRefs.length > 0 && (
+      <section>
+        <h3>关联主线（按研究兴趣）</h3>
+        <ul>{themeRefs.map(t => <li><a href={t.url}>{t.title}</a></li>)}</ul>
+      </section>
+    )}
+  </aside>
+)}
+
+<style>
+  .kg-member {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+  .kg-member h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--sl-color-text-accent);
+  }
+  .kg-member h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 1rem 0 0.4rem;
+    color: var(--sl-color-gray-2);
+  }
+  .kg-member ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .kg-member li {
+    padding: 0.2rem 0;
+    font-size: 0.92rem;
+  }
+  .kg-rel {
+    margin-left: 0.5rem;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+    background: var(--sl-color-gray-6);
+    border-radius: 0.25rem;
+    color: var(--sl-color-gray-2);
+  }
+</style>

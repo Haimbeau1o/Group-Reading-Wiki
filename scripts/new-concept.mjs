@@ -5,6 +5,10 @@
  *   [--label="<侧栏简称>"]            # 例 "MoE"，默认用 slug 大写
  *   [--description="<一句话定义>"]   # 30-50 字
  *   [--paper=<paper-slug>]           # 与之关联的 paper 的 slug（用作"在我们组的用法"段起点）
+ *   [--aliases=a,b,c]                # ✨ 别名（逗号分隔，搜索 / 自动链种子）
+ *   [--related=x,y]                  # ✨ 相关 concept slug（双向自动建边）
+ *   [--parent=<concept-slug>]        # ✨ 父概念 slug（GRPO.parent = PPO）
+ *   [--tags=t1,t2]                   # ✨
  *   [--json]
  *
  * 例：
@@ -36,6 +40,16 @@ const fullName = opts.full || slug;
 const label = opts.label || slug.toUpperCase();
 const description = opts.description || `（一句话定义 — 30–50 字）`;
 const linkedPaper = opts.paper || '';
+
+// 知识图字段（cycle-8）
+const splitCsv = (v) => (typeof v === 'string' ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
+const aliases = splitCsv(opts.aliases);
+const relatedConcepts = splitCsv(opts.related);
+const parentConcept = opts.parent || '';
+const tags = splitCsv(opts.tags);
+const yamlList = (arr) => arr.length ? '\n' + arr.map(s => `  - ${s}`).join('\n') : ' []';
+const yamlSafeQuote = (s) => /[:#&*!|>%@`,\[\]{}"'\\]/.test(s) ? `"${String(s).replace(/"/g, '\\"')}"` : s;
+const yamlListQuoted = (arr) => arr.length ? '\n' + arr.map(s => `  - ${yamlSafeQuote(s)}`).join('\n') : ' []';
 
 // YAML 安全引号
 const yamlSafe = (s) => /[:#&*!|>%@`,\[\]{}"'\\]/.test(s) ? `"${String(s).replace(/"/g, '\\"')}"` : s;
@@ -90,6 +104,10 @@ description: ${descY}
 sidebar:
   order: ${nextOrder}
   label: ${label}
+aliases:${yamlListQuoted(aliases)}
+related_concepts:${yamlList(relatedConcepts)}
+parent_concept: ${parentConcept || 'null'}
+tags:${yamlList(tags)}
 ---
 
 ## 一句话定义

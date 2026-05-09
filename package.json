@@ -9,7 +9,10 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "pnpm build:index && astro build",
+    "build:index": "node scripts/build-index.mjs",
+    "context:for": "node scripts/context-for.mjs",
+    "migrate:paper-concepts": "node scripts/migrate-paper-concepts.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "new:session": "node scripts/new-session.mjs",

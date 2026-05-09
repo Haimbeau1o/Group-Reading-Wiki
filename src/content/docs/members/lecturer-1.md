@@ -11,6 +11,9 @@ status: active
 research-interests:
   - Test-time reasoning
   - 多模态
+theme_refs:
+  - moe-sparsity
+  - multimodal
 ---
 
 > ⚠️ 占位主页。本人请替换 `Lecturer-1` 为真实姓名 + 填实际内容。

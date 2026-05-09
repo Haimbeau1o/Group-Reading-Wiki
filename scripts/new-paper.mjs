@@ -5,6 +5,9 @@
  *   [--title="..."]                # 不传 --arxiv 时手填
  *   [--theme=<theme-slug>]
  *   [--lead=<member-slug>]         # 该论文的带读人 / take owner
+ *   [--concept-refs=a,b,c]         # ✨ 知识图：引用的 concept slug（逗号分隔）
+ *   [--related-papers=x,y]         # ✨ 知识图：相关 paper slug
+ *   [--tags=t1,t2]                 # ✨ 自由 tag（小写连字符）
  *   [--json]
  *
  * 例：
@@ -44,6 +47,14 @@ const isJson = !!opts.json;
 const arxivId = opts.arxiv || '';
 const theme = opts.theme || '';
 const lead = opts.lead || '';
+
+// 知识图字段（cycle-8）— 逗号分隔
+const splitCsv = (v) => (typeof v === 'string' ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
+const conceptRefs = splitCsv(opts['concept-refs']);
+const relatedPapers = splitCsv(opts['related-papers']);
+const tags = splitCsv(opts.tags);
+
+const yamlList = (arr) => arr.length ? '\n' + arr.map(s => `  - ${s}`).join('\n') : ' []';
 
 // YAML 安全引号
 const yamlSafe = (s) => /[:#&*!|>%@`,\[\]{}"'\\]/.test(s) ? `"${String(s).replace(/"/g, '\\"')}"` : s;
@@ -195,7 +206,10 @@ description: ${descY}
 sidebar:
   label: ${titleY}
 ${theme ? `themes:\n  - ${theme}\n` : ''}${lead ? `lead: ${lead}\n` : ''}status: draft
-${usedArxiv ? `arxiv: ${arxivId}\n` : ''}---
+${usedArxiv ? `arxiv: ${arxivId}\n` : ''}concept_refs:${yamlList(conceptRefs)}
+related_papers:${yamlList(relatedPapers)}
+tags:${yamlList(tags)}
+---
 
 ${usedArxiv ? '' : '> ⚠️ Draft。请贡献者填充。\n'}
 ## 元信息

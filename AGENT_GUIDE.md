@@ -41,7 +41,8 @@ cat group.config.yaml
 | **角色模型** | `.agent/context/role-model.md` | 双层：简化 4 类（大/小导师/博/硕）↔ 完整 5 类聚类 |
 | **目录约定** | `.agent/context/repo-map.md` | 7 个内容模块：sessions / themes / members / concepts / papers / onboarding / how-to-contribute |
 | **写作约定** | `.agent/context/conventions.md` | frontmatter schema、命名、跨链接规则 |
-| **可用技能** | `.agent/skills/*.md` | 14 个场景 skill（见 §2 场景表） |
+| **可用技能** | `.agent/skills/*.md` | 15 个场景 skill（见 §2 场景表） |
+| **知识图（cycle-8+）** | `src/generated/knowledge-graph.json` | 由 `pnpm build:index` 生成。用 `pnpm context:for <slug>` 查邻居；写新内容前先跑 |
 | **可用脚本** | `package.json` scripts | `pnpm new:*` / `verify` / `list:*` / `update:group-config` |
 
 ---
@@ -74,6 +75,7 @@ cat group.config.yaml
 |-----------|------------------|---------|
 | "我读完 X 论文，做笔记" | [`add-paper-note`](.agent/skills/add-paper-note.md) | `pnpm new:paper` + Keshav 三遍法 |
 | "解释一下 GRPO 并加到词典" | [`add-concept`](.agent/skills/add-concept.md) | `pnpm new:concept` |
+| "组里有没有写过 X？" / 写新内容前先调研 | [`find-related-context`](.agent/skills/find-related-context.md) | `pnpm context:for <slug>` |
 | "把站点上线 / 部署" | [`setup-deploy`](.agent/skills/setup-deploy.md) | Cloudflare Pages 配置 |
 
 ### 治理（不常调）
@@ -93,7 +95,9 @@ cat group.config.yaml
 1. **永远先 `cat group.config.yaml`** 判 stage（见 §1）
 2. **检查仓库状态**：`git status` 看是否干净
 3. **读相关 skill 全文**（不要只看 §2 场景表的一句话定位）
-4. **了解现状**：`pnpm list:members --json` / `pnpm list:themes --json` / `pnpm list:sessions --source=git --since=7d --json`
+4. **了解现状**：
+   - 全局：`pnpm list:members --json` / `pnpm list:themes --json` / `pnpm list:sessions --source=git --since=7d --json`
+   - **针对某节点**（cycle-8 起强烈推荐）：`pnpm -s context:for <slug> [--depth=2]` —— 一次返回该节点 N 跳邻居（papers / concepts / sessions / themes / members），比拼装多个 list:* 命令准。写 paper / session / concept / 给新生定 reading list 前都跑一下；详见 [`find-related-context`](.agent/skills/find-related-context.md) skill
 
 ### 4.2 写之中
 
@@ -113,10 +117,11 @@ cat group.config.yaml
 
 ### 4.3 写之后
 
-1. **必跑** `pnpm verify`（schema + 链接 + 命名）
-2. **重要场景跑** `pnpm verify:full`（额外跑 `pnpm build`，merge 前必跑）
-3. **报告**：列出本次创建/修改的文件 + 验证结果 + 是否要 PI 看 git diff
-4. **不要自动 commit / push** —— 除非用户**明确**说"commit and push"
+1. **必跑** `pnpm verify`（schema + 链接 + 命名 + slug_refs 死链 + concept cycle）
+2. **改了 frontmatter 知识图字段**（`concept_refs` / `theme_refs` / `related_papers` / `aliases` 等）→ 跑 `pnpm build:index`，再 `pnpm context:for <slug>` 验证邻居确实出现（cycle-8 起强制）
+3. **重要场景跑** `pnpm verify:full`（额外跑 `pnpm build`，merge 前必跑；`build` 会自动先 `build:index`）
+4. **报告**：列出本次创建/修改的文件 + 验证结果 + 是否要 PI 看 git diff
+5. **不要自动 commit / push** —— 除非用户**明确**说"commit and push"
 
 ### 4.4 错误恢复
 

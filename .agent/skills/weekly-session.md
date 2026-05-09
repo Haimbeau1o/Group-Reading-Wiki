@@ -67,6 +67,43 @@ pnpm new:session <week> <paper-slug> --lead=<member-slug> --paper=papers/<paper-
    - 选读：相关概念词典 / 历史 sessions
    - 引导问题：根据 paper 摘要 + 关联主线**生成 3 个**有深度的问题（不是 "what is X"，而是 "why X over Y" / "what's the trade-off"）
 
+3-bis. **写"关联背景"段（cycle-8 起强制）**
+
+在 Pre-read 之前 / `## 0. 关联背景` 段，调用 `context:for` 拿邻居：
+
+```bash
+pnpm -s context:for papers/<paper-slug> --json --depth=2
+```
+
+把返回的：
+- `concepts`（这篇 paper 用到的概念）→ 列成"会前可补的概念词典"
+- `sessions`（之前讨论过这篇 / 同 theme 的历史 session）→ 列成"前情回顾"
+- `related_papers`（同方向已读 paper）→ 列成"同方向对照阅读"
+- 同主线下的其他 papers → 列成"主线坐标"
+
+**典型流程**：
+
+```
+agent: 跑 context:for → 拿到 [grpo, moe, mla] 三个 concept + W18 历史 session
+       → 在 session 页 § "0. 关联背景" 写：
+         > 本次共读建立在 W18 (DeepSeek-V4) 的基础上：
+         > - 概念前置：[GRPO](/concepts/grpo/) · [MoE](/concepts/moe/) · [MLA](/concepts/mla/)
+         > - 前情：[W18 · DeepSeek-V4](/sessions/2026-w18-deepseek-v4/) §3 讨论了 V4 的 long-context attention
+         > - 同主线：本主线 [test-time-reasoning](/themes/test-time-reasoning/) 还有 N 篇待读
+```
+
+这一段是"会前 5 分钟把没参会的人拉到坐标系"的关键。**不要让 agent 编**——只用 context:for 实际返回的邻居写。
+
+3-ter. **填 frontmatter 知识图字段**
+
+```yaml
+participants: [phd-1, phd-2]        # ✨ 除 lead 外的预计 / 实际参与者
+concept_refs: [grpo, moe]           # ✨ 本次重点讨论的 concept slug（来自 3-bis 拿到的列表，PI / lead 选）
+tags: [rl, reasoning]               # ✨
+```
+
+`participants` 即使在 status: upcoming 时**也建议预填**（让 `/members/<x>/` 能反显"将参与"）；会后由 post-meeting-recap 校对实际到场。
+
 4. **更新首页 banner**：
 
 修改 `src/content/docs/index.mdx` 的 "📅 本周共读" 区块。
@@ -232,6 +269,14 @@ pnpm verify
 ```
 
 如果有 error，**必须修完再说"完成"**。fail-fast 在 agent 流程里特别重要，否则错误会传染（坏链接被复制粘贴到下个 session）。
+
+### 8. 演练发现（cycle 8 · W22 DeepSeek-R1 续讨论 dogfood）
+
+- **#32 scaffold 不继承 `--paper` 的 themes**：`new:session --paper=papers/deepseek-r1` 生成的 `themes:` 仍为 `[]`。Agent 必须在 3-ter 步手补 `themes:`，否则主线页漏挂。建议 cycle-9 让 `new-session.mjs` 读 `--paper` 指向文件 frontmatter 自动继承 themes。
+- **#33 scaffold title 默认是 slug 拼接**（`2026-W22 · deepseek-r1-followup`），sidebar 难看。Agent 要 follow-up edit title。建议 cycle-9 给 `new-session.mjs` 加 `--title=` flag。
+- **#34 `context:for` 人读模式不是 markdown**：带 box-drawing 字符（──）+ emoji，复制到"0. 关联背景"段得手改成 `- [Title](/path/)` 列表。建议 cycle-9 加 `--md` flag。
+- **#35 2 跳邻居信噪比低**：MTP 通过 `related_concept(moe)` 间接命中 depth=2，但对"本周共读关联背景"相关度低。实践：`--depth=1` 就够用；只有做 personalized-onboarding 才值得开 depth=2。本 skill 3-bis 已建议 depth=2，dogfood 后改口 —— 默认用 depth=2 拿到 members/2-跳 concepts 可挑 1-2 条放进"可选扩展"，不要一股脑全贴。
+- **#36 知识图反向通路验证**：W22 session 的 `concept_refs: [grpo, moe]` 自动让 `/concepts/grpo/` 和 `/concepts/moe/` 页底部 Backlinks 多一条"W22"。反向链路 ✅（build:index 产出 46 edges，39→46 = +7 符合预期：1 paper + 2 concepts + 1 theme + 1 lead + 2 participants）。
 
 ### 7. 演练发现（cycle 5.A · Mixtral W10 演练）
 

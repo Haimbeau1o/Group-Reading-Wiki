@@ -89,34 +89,69 @@ function parseScalar(s) {
 }
 
 // frontmatter 的合规校验（agent 化的 schema check）
+//
+// `slug_refs` 字段声明哪些字段是"指向其他实体的 slug 列表 / 单 slug"：
+//   { field: 'concept_refs', target: 'concept', kind: 'array' }
+//   { field: 'parent_concept', target: 'concept', kind: 'scalar' }
+// verify.mjs 用它做跨实体死链检查；build-index.mjs 用它生成边。
+//
+// 设计契约：docs/WIKI_GRAPH_DESIGN.md
 export const SCHEMAS = {
   member: {
     required: ['title', 'role', 'status'],
+    optional: ['cluster', 'year', 'title_label', 'research-interests', 'theme_refs', 'tags'],
     enum: {
       role: ['大导师', '小导师', '博士生', '硕士生'],
       status: ['active', 'alumni', 'visitor'],
       cluster: ['方向掌舵者', '研究主理人', '学习成长者', '任务驱动者', '流动接触者'],
     },
+    slug_refs: [
+      { field: 'theme_refs', target: 'theme', kind: 'array' },
+    ],
   },
   session: {
     required: ['title', 'session_week', 'lead', 'status'],
+    optional: ['session_date', 'paper_refs', 'themes', 'participants', 'concept_refs', 'tags'],
     enum: {
       status: ['upcoming', 'live', 'archived'],
     },
+    slug_refs: [
+      { field: 'lead', target: 'member', kind: 'scalar' },
+      { field: 'participants', target: 'member', kind: 'array' },
+      { field: 'paper_refs', target: 'paper', kind: 'array' },
+      { field: 'themes', target: 'theme', kind: 'array' },
+      { field: 'concept_refs', target: 'concept', kind: 'array' },
+    ],
   },
   paper: {
     required: ['title', 'description'],
-    optional: ['status', 'themes', 'exemplar'],
+    optional: ['status', 'themes', 'exemplar', 'concept_refs', 'related_papers', 'tags'],
     // exemplar: true → init:group --reset 时保留（作为"好 paper note"的样板）
+    slug_refs: [
+      { field: 'themes', target: 'theme', kind: 'array' },
+      { field: 'concept_refs', target: 'concept', kind: 'array' },
+      { field: 'related_papers', target: 'paper', kind: 'array' },
+    ],
   },
   theme: {
     required: ['title', 'description'],
+    optional: ['owner', 'co_owners', 'tags'],
+    slug_refs: [
+      { field: 'owner', target: 'member', kind: 'scalar' },
+      { field: 'co_owners', target: 'member', kind: 'array' },
+    ],
   },
   concept: {
     required: ['title', 'description'],
+    optional: ['aliases', 'related_concepts', 'parent_concept', 'tags'],
+    slug_refs: [
+      { field: 'related_concepts', target: 'concept', kind: 'array' },
+      { field: 'parent_concept', target: 'concept', kind: 'scalar' },
+    ],
   },
   generic: {
     required: ['title'],
+    optional: ['tags'],
   },
 };
 

@@ -1,0 +1,13 @@
+---
+// Starlight Footer override：在默认 footer 上方插入知识图聚合段。
+// 设计契约：docs/WIKI_GRAPH_DESIGN.md §5.4
+import Default from '@astrojs/starlight/components/Footer.astro';
+import Backlinks from './Backlinks.astro';
+import ThemePages from './ThemePages.astro';
+import MemberActivity from './MemberActivity.astro';
+---
+
+<ThemePages />
+<MemberActivity />
+<Backlinks />
+<Default><slot /></Default>

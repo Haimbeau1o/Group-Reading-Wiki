@@ -12,6 +12,9 @@ status: active
 research-interests:
   - 长上下文
   - Test-time reasoning
+theme_refs:
+  - long-context
+  - test-time-reasoning
 ---
 
 > ⚠️ 占位主页。本人请替换 `PhD-Senior-1` 为真实姓名 + 填实际内容。

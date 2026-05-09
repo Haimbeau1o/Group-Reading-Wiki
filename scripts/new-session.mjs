@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 /**
  * pnpm new:session <week> <slug> [--lead=<member>] [--paper=<paper-slug>]
+ *   [--participants=a,b,c]   # ✨ 知识图：除 lead 外参与者 slug
+ *   [--concept-refs=x,y]     # ✨ 知识图：本次重点 concept slug
+ *   [--tags=t1,t2]           # ✨
  *
  * 例：
  *   pnpm new:session 2026-W19 mixtral-of-experts --lead=phd-senior-2 --paper=papers/mixtral
@@ -30,6 +33,13 @@ const lead = opts.lead || '<带读人>';
 const paperRef = opts.paper ? `\n  - /${opts.paper}/` : '';
 const today = new Date().toISOString().slice(0, 10);
 
+// 知识图字段（cycle-8）
+const splitCsv = (v) => (typeof v === 'string' ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
+const participants = splitCsv(opts.participants);
+const conceptRefs = splitCsv(opts['concept-refs']);
+const tags = splitCsv(opts.tags);
+const yamlList = (arr) => arr.length ? '\n' + arr.map(s => `  - ${s}`).join('\n') : ' []';
+
 const yamlSafe = (s) => /[:#&*!|>%@`,\[\]{}"'\\]/.test(s) ? `"${String(s).replace(/"/g, '\\"')}"` : s;
 const titleY = yamlSafe(`${week} · ${slug}`);
 const descY = yamlSafe(`${week} 周会共读。带读人：${lead}。`);
@@ -54,6 +64,9 @@ session_date: ${today}
 lead: ${lead}
 paper_refs:${paperRef}
 themes: []
+participants:${yamlList(participants)}
+concept_refs:${yamlList(conceptRefs)}
+tags:${yamlList(tags)}
 status: upcoming
 ---
 
@@ -69,6 +82,18 @@ status: upcoming
 | **会议地点** | 实验室 + 腾讯会议 |
 | **主 paper** | （待填） |
 | **关联主线** | （待填，链向 /themes/ 下相关主线） |
+
+---
+
+## 0. 🔗 关联背景
+
+> 由 \`pnpm context:for papers/<paper-slug>\` 拿到的邻居写在这里 —— 让没参会的人 5 分钟拉到坐标系。
+>
+> - 概念前置：（待 lead 用 context:for 拿到的 concepts 填）
+> - 前情：（同 theme / 引用同 paper 的历史 sessions）
+> - 同主线：（其他 papers）
+>
+> *agent 起草段：跑 \`pnpm -s context:for papers/<slug> --json --depth=2\` 后把邻居改写到这里，删除本提示。*
 
 ---
 

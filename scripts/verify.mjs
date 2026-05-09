@@ -48,7 +48,21 @@ function walk(dir) {
 
 const files = walk(DOCS);
 
-const allPaths = new Set(); // 用于第 3 步链接校验
+// 收集每类的 slug 集合，给 slug_refs 死链检查用
+const slugsByType = { paper: new Set(), concept: new Set(), theme: new Set(), member: new Set(), session: new Set() };
+for (const f of files) {
+  const rel = relative(ROOT, f);
+  const schema = detectSchema(rel);
+  if (!slugsByType[schema]) continue;
+  const base = f.split('/').pop().replace(/\.(md|mdx)$/, '');
+  if (base === 'index') continue;
+  slugsByType[schema].add(base);
+}
+
+// related_concepts 邻接表，用于 cycle 检测
+const conceptParentEdges = []; // [{from, to}] from parent_concept (单向，可成 cycle)
+
+const allPaths = new Set(); // 用于跨页链接校验
 for (const f of files) {
   const rel = relative(ROOT, f);
   // 文件名约定
@@ -83,12 +97,82 @@ for (const f of files) {
   }
   // 选 schema 校验
   const schemaName = detectSchema(rel);
-  const schemaErrors = validateFrontmatter(fm, SCHEMAS[schemaName]);
+  const schema = SCHEMAS[schemaName];
+  const schemaErrors = validateFrontmatter(fm, schema);
   for (const m of schemaErrors) log('error', rel, `[schema:${schemaName}] ${m}`);
+
+  // slug_refs 死链检查（设计契约 §4.3）
+  if (schema?.slug_refs) {
+    for (const ref of schema.slug_refs) {
+      const value = fm[ref.field];
+      if (value === undefined || value === null || value === '') continue;
+      const targetSet = slugsByType[ref.target];
+      if (!targetSet) continue;
+      const values = ref.kind === 'array'
+        ? (Array.isArray(value) ? value : [value])
+        : [value];
+      for (const v of values) {
+        const slug = String(v).trim().replace(/^\/+|\/+$/g, '')
+          .replace(/^(papers|concepts|themes|members|sessions)\//, '');
+        if (!slug) continue;
+        if (!targetSet.has(slug)) {
+          log('error', rel, `[graph] ${ref.field} → ${ref.target}/${slug} 不存在`);
+        }
+      }
+    }
+  }
+
+  // 收集 concept.parent_concept / concept.related_concepts 给 cycle 检测
+  if (schemaName === 'concept') {
+    const myBase = f.split('/').pop().replace(/\.(md|mdx)$/, '');
+    if (fm.parent_concept) {
+      const parentSlug = String(fm.parent_concept).trim().replace(/^concepts?\//, '');
+      conceptParentEdges.push({ from: myBase, to: parentSlug });
+    }
+  }
+
+  // paper.themes 为空 → warn（鼓励至少绑一条主线）
+  if (schemaName === 'paper' && (!fm.themes || (Array.isArray(fm.themes) && fm.themes.length === 0))) {
+    log('warn', rel, `[graph] paper 没有绑定 theme（建议至少 1 条）`);
+  }
 
   // 收集"页面 URL" 给链接校验
   const docsRel = relative(DOCS, f).replace(/\.(md|mdx)$/, '').replace(/\/index$/, '');
   allPaths.add('/' + docsRel + (docsRel ? '/' : ''));
+}
+
+// ── 1.5 concept parent_concept cycle 检测 ────────────────────
+function detectCycle(edges) {
+  // 构邻接表
+  const adj = {};
+  for (const e of edges) {
+    if (!adj[e.from]) adj[e.from] = [];
+    adj[e.from].push(e.to);
+  }
+  const visited = new Set();
+  const onStack = new Set();
+  const cycles = [];
+
+  function dfs(node, path) {
+    if (onStack.has(node)) {
+      const idx = path.indexOf(node);
+      cycles.push(path.slice(idx).concat(node));
+      return;
+    }
+    if (visited.has(node)) return;
+    visited.add(node);
+    onStack.add(node);
+    for (const next of adj[node] || []) dfs(next, [...path, node]);
+    onStack.delete(node);
+  }
+
+  for (const start of Object.keys(adj)) dfs(start, []);
+  return cycles;
+}
+
+const cycles = detectCycle(conceptParentEdges);
+for (const c of cycles) {
+  log('warn', '<graph>', `[graph] parent_concept 形成 cycle: ${c.join(' → ')}`);
 }
 
 // ── 2. 跨页链接 ────────────────────────────────────────────

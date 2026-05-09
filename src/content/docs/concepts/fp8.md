@@ -4,6 +4,12 @@ description: 用 8-bit 浮点存矩阵乘的输入，精细 scaling 防数值崩
 sidebar:
   order: 13
   label: FP8 训练
+aliases:
+  - FP8
+  - FP8 mixed precision
+tags:
+  - training
+  - efficiency
 ---
 
 ## 一句话定义

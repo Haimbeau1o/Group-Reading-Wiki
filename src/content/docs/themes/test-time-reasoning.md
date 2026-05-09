@@ -4,6 +4,13 @@ description: 推理时计算扩展：长 CoT、self-consistency、RL-based reaso
 sidebar:
   order: 3
   label: Test-time Reasoning
+owner: postdoc-1
+co_owners:
+  - phd-senior-1
+  - phd-mid-2
+tags:
+  - rl
+  - reasoning
 ---
 
 > ⚠️ **占位内容**。该方向 owner 请来填。

@@ -12,6 +12,10 @@ research-interests:
   - 长上下文
   - MoE
   - 训练稳定性
+theme_refs:
+  - long-context
+  - moe-sparsity
+  - test-time-reasoning
 ---
 
 > ⚠️ 占位主页。本人请替换 `Postdoc-1` 为真实姓名 + 填实际内容。

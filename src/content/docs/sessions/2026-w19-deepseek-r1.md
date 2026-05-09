@@ -10,6 +10,13 @@ paper_refs:
   - /papers/deepseek-r1/
 themes:
   - test-time-reasoning
+concept_refs:
+  - grpo
+  - moe
+participants:
+  - postdoc-1
+  - phd-mid-2
+  - ms-research-1
 status: archived
 ---
 

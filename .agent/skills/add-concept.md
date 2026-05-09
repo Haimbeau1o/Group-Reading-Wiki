@@ -57,9 +57,15 @@ sidebar:
 
 ## 执行步骤
 
-> 📝 **TODO**：暂无 `pnpm new:concept` scaffold（与其他类型不一致）。当前手动建文件，参考 `concepts/grpo.md` 或 `concepts/mode-fusion.md` 作模板。后续可加 scaffold 脚本统一。
+1. **建文件**（推荐用 scaffold）：
 
-1. **手动建文件**：复制下面的 frontmatter，写入 `src/content/docs/concepts/<slug>.md`：
+   ```bash
+   pnpm new:concept <slug> --full="<英文全称>" --label="<缩写>" \
+     --aliases="<别名1>,<别名2>" --related="<相关 slug>,<相关 slug>" \
+     [--parent=<父概念 slug>] [--paper=<已用过该术语的 paper slug>] --json
+   ```
+
+   或手动建。frontmatter 必含（cycle-8 起新字段标 ✨，可空但不要省）：
 
    ```yaml
    ---
@@ -68,8 +74,14 @@ sidebar:
    sidebar:
      order: <下一个序号>
      label: <缩写>
+   aliases: ["Group Relative Policy Optimization"]   # ✨ 别名（让搜索 / 自动链可命中）
+   related_concepts: [ppo]                            # ✨ 相关概念 slug，**双向自动建边**
+   parent_concept: ppo                                # ✨ 父概念（GRPO.parent = PPO）；无父填 null
+   tags: [rl]                                         # ✨ 小写连字符 tag
    ---
    ```
+
+   > 命名建议：`aliases` 包含全称 + 中文译名 + 常见缩写变体（"Mixture-of-Experts" / "MoE" / "稀疏专家"）。这是 Phase 2 自动链的种子。
 
 2. 写一句话定义（30-50 字，**严谨**）
 3. 写直觉（200-400 字，含一个直观对比 / 类比）
@@ -93,8 +105,17 @@ sidebar:
 
 6. 延伸阅读：原论文 + 相关概念
 7. 把新词条加到 `concepts/index.md` 的"已上线"列表（不要写死 "首批 N 条"）
-8. 检查所有引用过该术语的 paper / session 文件，**首次出现处**改成 `[<term>](/concepts/<slug>/)` 链接
-9. `pnpm verify`
+8. 检查所有引用过该术语的 paper / session 文件：
+   - **首次出现处**改成 `[<term>](/concepts/<slug>/)` 链接（正文）
+   - **同时**把本 slug 加进对应 paper 的 frontmatter `concept_refs[]` / session 的 `concept_refs[]`（这是知识图反向边的来源；用 `multi_edit` 改 frontmatter）
+9. `pnpm verify && pnpm build:index`
+10. **看邻居**：
+
+    ```bash
+    pnpm -s context:for concepts/<slug> --depth=1
+    ```
+
+    应能看到刚刚 backfill 的 paper / session 反向出现在 "papers ←" / "sessions ←" 段。如果为空 → 步骤 8 漏改 frontmatter。
 
 ## Update 路径（词典已存在但 demo 污染）
 
@@ -117,6 +138,12 @@ sidebar:
 - ❌ 不自动 commit
 
 ## Lessons learned
+
+### 演练发现（cycle 8 · 知识图集成）
+
+- **#F4 `pnpm new:concept` 其实一直存在**：cycle-5.B 的 `#29` 把它标 TODO 说"没 scaffold"，实际 `package.json` 有 `new:concept` 脚本。cycle-8 已修文档 + 给 scaffold 加 `--aliases` / `--related` / `--parent` / `--tags` flag。
+- **#F5 Step 8 的反向回写 frontmatter**：过去只要求"改正文链接"，不够。cycle-8 起**必须**同时把本 slug 加进 paper/session 的 frontmatter `concept_refs[]`，否则 `/concepts/<slug>/` 页 Backlinks 看不到反向。用 `multi_edit` 改 frontmatter，不要重写文件。
+- **#F6 Step 10 `context:for` 自检**：build:index 跑完再用 `pnpm -s context:for concepts/<slug>` 验证 "papers ←" / "sessions ←" 真的出现。为空 = Step 8 漏改某个 frontmatter。
 
 ### 演练发现（cycle 5.B · mode-fusion 新建 + moe demo 清洗）
 

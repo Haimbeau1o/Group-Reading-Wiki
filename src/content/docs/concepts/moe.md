@@ -4,6 +4,15 @@ description: 把 FFN 拆成多个专家，每个 token 只走其中少数几个 
 sidebar:
   order: 10
   label: MoE
+aliases:
+  - Mixture of Experts
+  - 混合专家
+related_concepts:
+  - mla
+  - mtp
+tags:
+  - architecture
+  - sparsity
 ---
 
 ## 一句话定义

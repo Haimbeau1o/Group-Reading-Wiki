@@ -8,9 +8,9 @@ sidebar:
 session_week: 2026-W18
 session_date: 2026-05-04
 lead: phd-senior-1
-paper_refs:
-  - /deepseek/v4-research/
-  - /deepseek/hybrid-attention/
+# 注：本 session 关联的是 /deepseek/ 深度专辑文章（非 /papers/ 下的正式 paper note），
+#     在正文 "📅 元信息" 表格的 **关联文章** 行用普通 markdown 链接引用。
+paper_refs: []
 themes:
   - long-context
 status: live   # upcoming / live / archived

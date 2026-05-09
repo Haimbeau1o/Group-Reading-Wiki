@@ -24,6 +24,23 @@
 
 1. `src/content/docs/themes/<slug>.md` 存在
 2. `pnpm list:papers --json` 看 papers/ 里跟该 theme 关联的 papers（frontmatter `themes:` 字段）
+3. **拿主线现状全景**（cycle-8 起推荐 — 比手翻 list:* 快且涵盖 sessions / concepts）：
+
+   ```bash
+   pnpm -s context:for themes/<slug> --json --depth=2
+   ```
+
+   返回该主线 1 跳邻居（papers / sessions / owner / co_owners）+ 2 跳（papers 引用的 concepts）。**先读这个再写**，比 grep markdown 准确得多。
+
+## frontmatter 知识图字段（cycle-8）
+
+```yaml
+owner: <member-slug>            # ✨ 主线 owner（小导师 / PI）
+co_owners: [<member-slug>, ...] # ✨ 核心博士
+tags: [<lowercase-hyphen>, ...] # ✨
+```
+
+刷新主线时**顺便补**这 3 个字段（如果还为空 / null）。`verify` 会对 owner = null 报 info 而非 error，但有 owner 才能在 `/members/<owner>/` 页自动反向显示"主理的主线"。
 
 ## 执行步骤
 
@@ -129,6 +146,12 @@ agent：好。先扫描当前状态…
 
 agent：（写入 + 列出 Type 3 候选...）
 ```
+
+## 演练发现（cycle 8 · 知识图集成）
+
+- **#F7 前置检查加 context:for**：过去要跑多条 `pnpm list:*` 拼装主线全景，手工易漏。cycle-8 起首选 `pnpm -s context:for themes/<slug> --json --depth=2` 一次拿到 papers / sessions / concepts / owner / co_owners。
+- **#F8 frontmatter 知识图字段**：`owner` / `co_owners` / `tags` 是构建期反向链接的来源。 主线有 owner，构建后 `/members/<owner>/` 页 MemberActivity 会自动反显"主理的主线"。Phase 1 中 owner null 只是 info 不是 error，但强烈建议回填。
+- **#F9 dogfood 状态 · 2026-W22**：refresh-theme 本 cycle 未做完整 end-to-end；但 `find-related-context` skill 里示例的 `pnpm context:for themes/test-time-reasoning --depth=2` 已实测能正确返回 1 paper / 2 sessions / 3 concepts / 1 owner + 2 co_owners。Type 3（开放问题）数据源与 #F7 互补，仍用 `list:sessions --source=git --since=180d`。
 
 ## 演练发现总结（2026-05 静态扫描）
 

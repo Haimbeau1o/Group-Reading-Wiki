@@ -1,0 +1,101 @@
+---
+// 主线页底部"旗下内容"段。
+// 设计契约：docs/WIKI_GRAPH_DESIGN.md §5.2
+import { loadGraph, pathnameToNodeId, expandNodes } from '../lib/knowledge-graph.mjs';
+
+const graph = loadGraph();
+const nodeId = pathnameToNodeId(Astro.url.pathname);
+
+let bucket = null;
+if (nodeId?.startsWith('theme/')) {
+  const slug = nodeId.replace('theme/', '');
+  bucket = graph.by_theme[slug] || null;
+}
+
+const papers = bucket ? expandNodes(graph, bucket.papers) : [];
+const sessions = bucket ? expandNodes(graph, bucket.sessions) : [];
+const concepts = bucket ? expandNodes(graph, bucket.concepts) : [];
+const ownerNode = bucket?.owner ? graph.nodes[`member/${bucket.owner.replace(/^member\//, '')}`] : null;
+const coOwnerNodes = (bucket?.co_owners || [])
+  .map(s => graph.nodes[`member/${s.replace(/^member\//, '')}`])
+  .filter(Boolean);
+
+const hasAny = papers.length || sessions.length || concepts.length || ownerNode || coOwnerNodes.length;
+---
+
+{hasAny && (
+  <aside class="kg-theme not-content">
+    <h2>📚 旗下内容</h2>
+
+    {(ownerNode || coOwnerNodes.length > 0) && (
+      <section>
+        <h3>负责人</h3>
+        <ul>
+          {ownerNode && (
+            <li><a href={ownerNode.url}>{ownerNode.title}</a> <span class="kg-rel">owner</span></li>
+          )}
+          {coOwnerNodes.map(m => (
+            <li><a href={m.url}>{m.title}</a> <span class="kg-rel">co-owner</span></li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {papers.length > 0 && (
+      <section>
+        <h3>论文（{papers.length}）</h3>
+        <ul>{papers.map(p => <li><a href={p.url}>{p.title}</a></li>)}</ul>
+      </section>
+    )}
+
+    {sessions.length > 0 && (
+      <section>
+        <h3>共读 session（{sessions.length}）</h3>
+        <ul>{sessions.map(s => <li><a href={s.url}>{s.title}</a></li>)}</ul>
+      </section>
+    )}
+
+    {concepts.length > 0 && (
+      <section>
+        <h3>相关概念（{concepts.length}）</h3>
+        <ul>{concepts.map(c => <li><a href={c.url}>{c.title}</a></li>)}</ul>
+      </section>
+    )}
+  </aside>
+)}
+
+<style>
+  .kg-theme {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+  .kg-theme h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--sl-color-text-accent);
+  }
+  .kg-theme h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 1rem 0 0.4rem;
+    color: var(--sl-color-gray-2);
+  }
+  .kg-theme ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .kg-theme li {
+    padding: 0.2rem 0;
+    font-size: 0.92rem;
+  }
+  .kg-rel {
+    margin-left: 0.5rem;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+    background: var(--sl-color-gray-6);
+    border-radius: 0.25rem;
+    color: var(--sl-color-gray-2);
+  }
+</style>

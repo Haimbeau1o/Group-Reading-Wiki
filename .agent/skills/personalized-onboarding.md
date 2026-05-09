@@ -19,10 +19,21 @@
 
 ### 1. 读资源
 
+**首选 cycle-8 知识图**（一次返回 papers / sessions / concepts / owner，避免多 list:* 拼装）：
+
+```bash
+pnpm -s context:for themes/<theme-slug> --json --depth=2
+```
+
+返回该主线下的 papers / sessions / concepts / owner / co_owners。Agent 据此组装：
+- 必读 paper：用 papers 段前 2 篇（优先 `exemplar: true`）
+- 选读 concepts：用 concepts 段前 2-3 个（先父概念后子）
+- 历史 sessions：用 sessions 段最近 3 个
+
+补充查询（仍可用）：
+
 - `pnpm list:themes --json` 找匹配的主线（基于研究兴趣关键词）
 - 读对应 theme 文件的"推荐阅读路径"段
-- `pnpm list:concepts --json` 看哪些概念词条与主线相关
-- `pnpm list:sessions --since=180d --theme=<theme-slug>` 看最近的 sessions
 
 ### 2. 在新人主页 `<slug>.md` 加一节
 
@@ -71,10 +82,27 @@
 | 硕士生（专硕 / 工程） | cluster: 任务驱动者 | 第一周跑通 baseline；第一月写 internal/playbook；不必每周共读 |
 | 硕士生（RA / 实习生） | — | 1 周路径 + 离开前留 1 篇 wiki |
 
-### 5. 跑 verify
+### 5. 在新人 `members/<slug>.md` frontmatter 加 `theme_refs`
+
+让"主理 / 关心的主线"成为结构化数据，构建期会在 `/themes/<slug>/` 反向显示"关心的成员"：
+
+```yaml
+theme_refs: [<theme-slug-1>, <theme-slug-2>]  # ✨ 与 research-interests 并存
+tags: [<lowercase-hyphen>, ...]               # ✨
+```
+
+> `research-interests`（自由文本）和 `theme_refs`（slug 列表）暂时**并存**。Phase 2 会迁移到只用 `theme_refs`。
+
+### 6. 跑 verify
 
 ## 不要做的事
 
 - ❌ 不改全局 onboarding.md
 - ❌ 不假定有 internal 路径文档（如果不存在留占位 "(内部 playbook 待补)"）
 - ❌ 不自动 commit
+
+## 演练发现（cycle 8 · 知识图集成）
+
+- **#F10 context:for themes/<slug> 是主力**：过去要跑 3-4 条 list:* 命令拼出主线下的 papers / concepts / sessions，cycle-8 `pnpm -s context:for themes/<slug> --depth=2` 一条搞定，还带 owner / co_owners（可直接写进"引导人"字段）。
+- **#F11 `theme_refs` 必须写进 members/<new>.md frontmatter**：否则构建期 `/themes/<theme>/` 页看不到这位新生。`research-interests` 自由文本对 agent 友好但对构建期无用。两者并存。
+- **#F12 未做完整 dogfood**：本 cycle 只静态更新。下次真给新生定 onboarding 时记得记踩坑回到这里。

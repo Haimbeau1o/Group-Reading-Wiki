@@ -2,6 +2,8 @@
 /**
  * pnpm new:theme <slug> --title="<主线名称>" [--label="<sidebar 短名>"]
  *                       [--description="<一句话>"] [--owner=<member-slug>]
+ *                       [--co-owners=a,b]   # ✨ 知识图：核心博士 slug
+ *                       [--tags=t1,t2]      # ✨
  *                       [--json]
  *
  * 例：
@@ -40,6 +42,12 @@ const description = opts.description || `${title} —— 一句话定位（请�
 const owner = opts.owner || '';
 const isJson = !!opts.json;
 
+// 知识图字段（cycle-8）
+const splitCsv = (v) => (typeof v === 'string' ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
+const coOwners = splitCsv(opts['co-owners']);
+const tags = splitCsv(opts.tags);
+const yamlList = (arr) => arr.length ? '\n' + arr.map(s => `  - ${s}`).join('\n') : ' []';
+
 // YAML 安全引号
 const yamlSafe = (s) =>
   /[:#&*!|>%@`,\[\]{}"'\\]/.test(s)
@@ -71,6 +79,9 @@ description: ${yamlSafe(description)}
 sidebar:
   order: 1
   label: ${yamlSafe(label)}
+owner: ${owner || 'null'}
+co_owners:${yamlList(coOwners)}
+tags:${yamlList(tags)}
 ---
 
 ## 一句话定位

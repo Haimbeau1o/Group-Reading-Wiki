@@ -18,6 +18,10 @@ export default defineConfig({
     starlight({
       title: "Leon's Group",
       description: "Leon's Group 课题组共享大脑：共读、笔记、研究记忆、新人入口。",
+      // 知识图聚合段（Backlinks / ThemePages / MemberActivity）注入到所有页 footer 上方
+      components: {
+        Footer: './src/components/KnowledgeFooter.astro',
+      },
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/Haimbeau1o/Group-Reading-Wiki' },
       ],

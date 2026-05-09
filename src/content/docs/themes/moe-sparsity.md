@@ -4,6 +4,12 @@ description: 专家路由、负载均衡、稀疏激活的训练与推理。
 sidebar:
   order: 2
   label: MoE / 稀疏
+owner: lecturer-1
+co_owners:
+  - phd-mid-1
+tags:
+  - architecture
+  - sparsity
 ---
 
 > ⚠️ **占位内容**。该方向 owner 请来填。

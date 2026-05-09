@@ -250,7 +250,22 @@ PI 回答：
 ### 4-bis. 引用的关键论文
 
 - 检查 `papers/` 是否已有 → 有则链 → 没有则**建议**加到 "Counter-evidence" 或 "延伸阅读"
+- 已有的同方向 paper → **写进 frontmatter `related_papers[]`**（构建期自动生成双向 backlink）
 - **方法名 / 模型名**：暂不强制建索引，plain text 即可
+
+### 4-ter. 写 frontmatter 知识图字段（cycle-8 起强制）
+
+scaffold 完后，agent **必须**回 frontmatter 补 3 个新字段（任一可空，但不要省）：
+
+```yaml
+concept_refs: [grpo, moe]      # 4.5 步选定要"已链"的 concept slug 列表
+related_papers: []             # 4-bis 找到的同方向已收录 paper slug 列表
+tags: [rl, reasoning]          # 自由 tag（小写连字符），用于跨页聚合
+```
+
+写法：用 `multi_edit` 改 frontmatter 即可，**不要** edit 整篇 paper note。
+
+构建期 `pnpm build:index` 会基于这些字段在 `/papers/<slug>/` 底部自动渲染 Backlinks，无需手维护反向链接。
 
 ### 5. 主线页双向更新
 
@@ -260,11 +275,20 @@ PI 回答：
 - [<paper title>](/papers/<slug>/) — \<一句话定位\>
 ```
 
-### 6. 跑 verify
+### 6. 跑 verify + 看邻居
 
 ```bash
 pnpm verify
+pnpm build:index                            # 重建知识图
+pnpm -s context:for papers/<slug> --depth=1 # 检查邻居是否合理
 ```
+
+`context:for` 应回显：
+- `concepts (N)` ← 你刚填的 `concept_refs`
+- `themes (1)` ← `themes[0]`
+- `related_papers (M)` ← 双向自动配上
+
+如果**应该有邻居**却为空，多半是 frontmatter 字段名拼错或漏了 4-ter 步。
 
 ### 7. 报告 PI
 
@@ -382,6 +406,12 @@ agent：（走 add-concept skill）
 - **Counter-evidence 段是质量分水岭**。无 counter-evidence 的 paper note 容易变成宣传册。Agent 主动找 1–2 篇对照能让 wiki 显著更可信。
 - **复现性 checklist 必填**。哪怕全打 ✗，也比留空有用 —— 是 wiki 对学生说"我们关心可复现"的 signal。
 - **三遍阅读法的边界**：第三遍（虚拟复现）agent 的判断力差于人，能做的是 "找信息源汇报"，不是 "下结论"。
+
+### 演练发现（cycle 8 · 知识图集成）
+
+- **#F1 frontmatter 知识图字段**：`concept_refs` / `related_papers` / `tags` 从 cycle-8 起是一等公民，scaffold 默认吐空 `[]`，**不要省**（空字段不会 verify 报错，但 `pnpm build:index` 不会把 paper 计入对应 concept 的反向 backlink）。Step 4-ter 已加。
+- **#F2 Step 4.5 之后要回写 frontmatter**：add-concept 联动给用户列的 🔗 已链清单，不光要改正文链接，还要 **append 到 frontmatter `concept_refs[]`**。否则 `/concepts/X/` 页底部 Backlinks 不会显示这篇 paper。
+- **#F3 verify 完要跑 `build:index` + `context:for`**：原 Step 6 只有 verify，agent 容易忘记"邻居是否真产出"。已加 Step 6 的 `pnpm build:index && pnpm -s context:for papers/<slug>` 自检闭环。
 
 ### 演练发现（Qwen3 二刷 cycle 4）
 

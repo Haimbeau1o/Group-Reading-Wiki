@@ -133,8 +133,9 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ### ✅ It does
 
-- **Structured consolidation**: 14 agent skills cover sessions, papers, concepts, members, themes, digest, PR review, template upgrade
-- **Scaffold + self-check**: `pnpm new:session/paper/member/theme/concept` produce templates in one line; `pnpm verify` checks schema/links/naming
+- **Structured consolidation**: 15 agent skills cover sessions, papers, concepts, members, themes, digest, PR review, template upgrade, find-related-context
+- **Knowledge graph (cycle-8+)**: write explicit relations in frontmatter (`concept_refs` / `related_papers` / `theme_refs` ...); build step generates `src/generated/knowledge-graph.json`; every page footer auto-renders **Backlinks** / **ThemePages** / **MemberActivity** — no manual reverse-link maintenance
+- **Scaffold + self-check**: `pnpm new:session/paper/member/theme/concept` produce templates in one line (with knowledge-graph flags `--concept-refs` / `--related-papers` / `--aliases` / `--co-owners`); `pnpm verify` checks schema/links/naming/dead-slug/cycles
 - **State-machine driven**: `group.config.yaml` is the agent's source of truth; the `stage` field (template → initialized → established) decides which skill to invoke
 - **Cold-start friendly**: `pnpm init:group` clears demo, rebrands, and writes config in 30s
 - **Public / private layering**: themes and paper notes go public to attract collaborators; personal reading logs / internal playbooks stay behind Cloudflare Access
@@ -218,6 +219,7 @@ Grouped by usage frequency. Each skill is self-contained with a "must not do" li
 |-------|---------|
 | [`add-paper-note`](.agent/skills/add-paper-note.md) | I finished reading paper X, write notes |
 | [`add-concept`](.agent/skills/add-concept.md) | Explain term X, add to glossary |
+| [`find-related-context`](.agent/skills/find-related-context.md) | Before writing, ask the knowledge graph "what does the group already have on X" |
 | [`setup-deploy`](.agent/skills/setup-deploy.md) | Go live on Cloudflare Pages |
 
 **Governance**
@@ -232,8 +234,12 @@ Grouped by usage frequency. Each skill is self-contained with a "must not do" li
 
 ```bash
 # Self-check (CI must run)
-pnpm verify                                    # schema + links + naming (fast)
+pnpm verify                                    # schema + links + naming + slug_refs + concept cycles (fast)
 pnpm verify:full                               # adds pnpm build (must run before merge)
+
+# Knowledge graph (cycle-8+, run context:for before drafting new content)
+pnpm build:index                                       # writes src/generated/knowledge-graph.json
+pnpm context:for concepts/grpo [--depth=2] [--json]    # N-hop neighbors of any node
 
 # Introspection (agent calls before deciding)
 pnpm list:members --json [--role=博士生]

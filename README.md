@@ -133,8 +133,9 @@ cat AGENT_GUIDE.md          # 模板设计的入口文档
 
 ### ✅ 能做
 
-- **结构化沉淀**：14 个 agent skill 覆盖周会、论文、概念、成员、主线、digest、PR review、模板升级
-- **scaffold + 自检**：`pnpm new:session/paper/member/theme/concept` 一行生成模板，`pnpm verify` 检 schema/链接/命名
+- **结构化沉淀**：15 个 agent skill 覆盖周会、论文、概念、成员、主线、digest、PR review、模板升级、find-related-context
+- **知识图（cycle-8+）**：frontmatter 写 `concept_refs` / `related_papers` / `theme_refs` 等显式关系，构建期生成 `src/generated/knowledge-graph.json`；每页底部自动渲染 **Backlinks**（反向链接）/ **旗下内容**（主线）/ **参与记录**（成员）— 无需手维护反向链
+- **scaffold + 自检**：`pnpm new:session/paper/member/theme/concept` 一行生成模板（scaffold 已支持 `--concept-refs` / `--related-papers` / `--aliases` / `--co-owners` 等知识图字段 flag），`pnpm verify` 检 schema/链接/命名/死 slug/cycle
 - **状态机驱动**：`group.config.yaml` 是 agent 真相源，`stage` 字段（template → initialized → established）决定调哪个 skill
 - **冷启动友好**：`pnpm init:group` 30 秒清空 demo、替换品牌、写好配置
 - **公私分层**：主线 / 论文解读对外公开吸引合作；个人 reading log / internal playbook 用 Cloudflare Access 锁
@@ -218,6 +219,7 @@ template:
 |-------|------|
 | [`add-paper-note`](.agent/skills/add-paper-note.md) | 我读完 X paper，做笔记 |
 | [`add-concept`](.agent/skills/add-concept.md) | 解释 X 术语，加到词典 |
+| [`find-related-context`](.agent/skills/find-related-context.md) | 写新内容前先问知识图"组里关于 X 的现状是什么" |
 | [`setup-deploy`](.agent/skills/setup-deploy.md) | 上线到 Cloudflare Pages |
 
 **治理**
@@ -232,8 +234,12 @@ template:
 
 ```bash
 # 自检（CI 必跑）
-pnpm verify                                    # schema + 链接 + 命名（快）
+pnpm verify                                    # schema + 链接 + 命名 + slug_refs 死链 + concept cycle（快）
 pnpm verify:full                               # 加跑 build（merge 前必跑）
+
+# 知识图（cycle-8+，写新内容前必跑 context:for）
+pnpm build:index                                       # 生成 src/generated/knowledge-graph.json
+pnpm context:for concepts/grpo [--depth=2] [--json]    # 看节点 N 跳邻居，写新内容前先问
 
 # Introspect（agent 决策前调用）
 pnpm list:members --json [--role=博士生]

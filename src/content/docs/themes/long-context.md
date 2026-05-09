@@ -4,6 +4,12 @@ description: 百万 token 级别推理的注意力 / KV cache / 调度优化。
 sidebar:
   order: 1
   label: 长上下文
+owner: postdoc-1
+co_owners:
+  - phd-senior-1
+tags:
+  - efficiency
+  - inference
 ---
 
 > ⚠️ **占位内容**。Leon 与该方向 owner 请来填。下方结构是模板。

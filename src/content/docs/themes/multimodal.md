@@ -4,6 +4,12 @@ description: 视觉-语言对齐、视觉 token 压缩、视觉原语推理。
 sidebar:
   order: 4
   label: 多模态
+owner: lecturer-1
+co_owners:
+  - ms-research-2
+tags:
+  - vision
+  - alignment
 ---
 
 > ⚠️ **占位内容**。该方向 owner 请来填。

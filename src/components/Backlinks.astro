@@ -1,0 +1,78 @@
+---
+// 反向链接面板：按类型分组展示"谁引用了本页"。
+// 设计契约：docs/WIKI_GRAPH_DESIGN.md §5.1
+import { loadGraph, pathnameToNodeId } from '../lib/knowledge-graph.mjs';
+
+const graph = loadGraph();
+const nodeId = pathnameToNodeId(Astro.url.pathname);
+
+const backlinks = nodeId ? (graph.backlinks[nodeId] || []) : [];
+
+// 按类型分组（papers / sessions / themes / members / concepts）
+const groups = { paper: [], session: [], theme: [], member: [], concept: [] };
+const labels = { paper: '论文', session: '共读 session', theme: '研究主线', member: '成员', concept: '概念' };
+
+for (const bl of backlinks) {
+  const node = graph.nodes[bl.from];
+  if (!node) continue;
+  if (!groups[node.type]) continue;
+  groups[node.type].push({ ...node, rel: bl.rel });
+}
+
+const hasAny = Object.values(groups).some(g => g.length > 0);
+---
+
+{hasAny && (
+  <aside class="kg-backlinks not-content">
+    <h2>🔗 反向链接</h2>
+    {Object.entries(groups).map(([type, items]) => items.length > 0 && (
+      <section>
+        <h3>{labels[type]}（{items.length}）</h3>
+        <ul>
+          {items.map(item => (
+            <li>
+              <a href={item.url}>{item.title}</a>
+              <span class="kg-rel">{item.rel}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </aside>
+)}
+
+<style>
+  .kg-backlinks {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+  .kg-backlinks h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--sl-color-text-accent);
+  }
+  .kg-backlinks h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 1rem 0 0.4rem;
+    color: var(--sl-color-gray-2);
+  }
+  .kg-backlinks ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .kg-backlinks li {
+    padding: 0.2rem 0;
+    font-size: 0.92rem;
+  }
+  .kg-rel {
+    margin-left: 0.5rem;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+    background: var(--sl-color-gray-6);
+    border-radius: 0.25rem;
+    color: var(--sl-color-gray-2);
+  }
+</style>
