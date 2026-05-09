@@ -228,9 +228,11 @@ console.log(`  ✓ verify 通过，0 error 0 warning`);
 // ─────────────────────────────────────────────────────────────
 
 if (WITH_BUILD) {
-  step('build — 额外验证：astro build 成功');
-  const res7 = run('node_modules/.bin/astro build', { cwd: TMP_ROOT });
-  if (!res7.ok) fail('astro build failed', res7.out);
+  step('build — 额外验证：pnpm build 成功（含 build:index + astro build）');
+  // 必须用 pnpm build 而不是 astro 直接调 —— package.json 链里 build:index
+  // 会先生成 src/generated/knowledge-graph.json，astro build 才能读到
+  const res7 = run('pnpm build', { cwd: TMP_ROOT });
+  if (!res7.ok) fail('pnpm build failed', res7.out);
 
   const pageMatch = res7.out.match(/(\d+)\s+page\(s\) built/);
   const pages = pageMatch ? pageMatch[1] : '?';
