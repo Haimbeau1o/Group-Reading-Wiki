@@ -195,6 +195,101 @@ git checkout -b feat/your-improvement
 
 ---
 
+## 版本化升级指南
+
+### cycle-8 · Wiki Knowledge Graph Phase 1（2026-05）
+
+第一次引入**显式关系**的大版本。老 fork 升上来需要 3 步。
+
+**骨架覆盖**（照上面 "手工方式" 跑）：
+
+```bash
+git fetch upstream
+git checkout upstream/main -- \
+  scripts/ \
+  .agent/skills/ \
+  .agent/context/ \
+  docs/WIKI_GRAPH_DESIGN.md docs/STYLE_GUIDE.md docs/UPGRADING.md \
+  .agent/MAINTAINER_PLAYBOOK.md \
+  .github/workflows/ \
+  src/components/ \
+  src/lib/
+```
+
+会引入：
+
+- `scripts/build-index.mjs` · `context-for.mjs` · `migrate-paper-concepts.mjs`
+- `scripts/lib/frontmatter.mjs` schema 扩展（向后兼容，所有新字段 optional）
+- `scripts/verify.mjs` 加 slug_refs 死链检 / concept cycle 检 / paper.themes 空 warn
+- `src/components/Backlinks.astro` · `ThemePages.astro` · `MemberActivity.astro` · `KnowledgeFooter.astro`
+- `src/lib/knowledge-graph.mjs`（读图共享工具）
+- `.agent/skills/find-related-context.md` + 5 个 skill 修订
+- `docs/WIKI_GRAPH_DESIGN.md`（设计契约，读一次）
+
+**混合文件手工 merge**：
+
+1. **`astro.config.mjs`**：在 `starlight({})` 里加 `components` override（与你的 giscus / title 平级）：
+
+   ```js
+   starlight({
+     title: "Your Group",
+     // ...你原有的 ...
+     components: {
+       Footer: './src/components/KnowledgeFooter.astro',  // ← cycle-8 新增
+     },
+     // ...
+   })
+   ```
+
+   若你已经有自定义 Footer，把它作为 slot 嵌到 `KnowledgeFooter.astro` 顶部，或把 Backlinks / ThemePages / MemberActivity 三个组件单独放进你的 Footer。
+
+2. **`package.json`**：添加 3 条 script 和 `pnpm build` 的前置链：
+
+   ```json
+   "build": "pnpm build:index && astro build",
+   "build:index": "node scripts/build-index.mjs",
+   "context:for": "node scripts/context-for.mjs",
+   "migrate:paper-concepts": "node scripts/migrate-paper-concepts.mjs",
+   ```
+
+3. **`.gitignore`**：加一行
+
+   ```
+   src/generated/
+   ```
+
+   `build-index.mjs` 输出到 `src/generated/knowledge-graph.json`，不进 git。
+
+**内容 backfill（可选，但强烈建议）**：
+
+老内容的 frontmatter 不需要改动，`pnpm verify` 会过。但知识图反向链接 / 主线旗下聚合要生效，需要给 frontmatter 填新字段：
+
+```bash
+# 半自动：扫 papers/*.md 正文里的 [X](/concepts/X/) 链接，回填进 frontmatter.concept_refs
+pnpm migrate:paper-concepts --dry-run    # 预览
+pnpm migrate:paper-concepts              # 真改
+
+# 手动建议补的字段（每类 5-10 分钟）
+# papers:   concept_refs / related_papers / tags
+# concepts: aliases / related_concepts / parent_concept / tags
+# themes:   owner / co_owners / tags
+# sessions: participants / concept_refs / tags
+# members:  theme_refs / tags
+```
+
+完成后跑验证链：
+
+```bash
+pnpm verify && pnpm build:index
+pnpm -s context:for <any-slug>   # 看邻居对不对
+```
+
+**可能踩到的坑**：
+
+- 🐛 cycle-8 首提交有 2 个 bug，已在 `e7858a1` 修：YAML null 解析 + 双向 edges dedup。**确保 upstream checkout 到 `e7858a1` 或更新**（不要停在 `05c8075`）
+- ⚠ 如果 `pnpm build:index` 报 schema error，多半是老 frontmatter 里 `parent_concept: some-slug` 指向的 concept 文件不存在 —— verify 现在会捕获这种死链，修掉 slug 或建对应 concept 页
+- ⚠ 新组件 Backlinks 等在**完全无反向链接的页面隐藏**，不会污染页面；但若你自定义了 Footer override，要把 KnowledgeFooter 的逻辑合入，否则三个组件不会渲染
+
 ## 常见问答
 
 **Q: 升级会不会动我的 `src/content/docs/`？**

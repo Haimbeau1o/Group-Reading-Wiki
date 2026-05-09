@@ -298,6 +298,12 @@ cleanDirHonorExemplar('src/content/docs/sessions/digest');
 // 4.5. 清空 papers/ 但保留 exemplar ─────────────────
 // R1 paper note 有 exemplar: true → 默认保留作"什么是好 paper note"样板
 cleanDirHonorExemplar('src/content/docs/papers');
+
+// 4.6. 清洗 kept exemplar 的 stale slug_refs（cycle-8+）─────
+// cleanDirHonorExemplar 保留了 exemplar paper，但它的 frontmatter
+// 可能引用已删除的 demo themes/members（cycle-8 verify 的 slug_refs
+// 死链检会卡住 CI）。扫一遍，把这些 stale ref 过滤掉。
+sanitizeKeptExemplarRefs();
 const sessionsIndex = join(ROOT, 'src/content/docs/sessions/index.mdx');
 const newSessionsIndex = `---
 title: 共读会议（Sessions）
@@ -929,6 +935,171 @@ function cleanDirHonorExemplar(relDir) {
     if (!DRY_RUN) unlinkSync(p);
     log(`🗑 removed ${relDir}/${name.name}`);
   }
+}
+
+/**
+ * cycle-8+：cleanDirHonorExemplar 保留的 exemplar 文件，其 frontmatter 可能
+ * 引用已被删除的 demo 主线 / 成员 / session，导致 `pnpm verify` 的 slug_refs
+ * 死链检失败。本函数扫 kept 文件，过滤每个 slug_refs 字段只保留仍存在的。
+ *
+ * 字段列表取自 scripts/lib/frontmatter.mjs 的 schemaRegistry.slug_refs。
+ * 实现用 regex 改写 frontmatter（保持原注释 / 顺序），不走完整 YAML 重写。
+ */
+function sanitizeKeptExemplarRefs() {
+  // 当前仍存在的 slug 集合
+  const existingSlugs = {
+    theme: listBaseNames('src/content/docs/themes'),
+    member: listBaseNames('src/content/docs/members'),
+    concept: listBaseNames('src/content/docs/concepts'),
+    paper: listBaseNames('src/content/docs/papers'),
+    session: listBaseNames('src/content/docs/sessions'),
+  };
+
+  // (field, target) — 与 frontmatter.mjs schemaRegistry 保持一致
+  const paperRefs = [
+    { field: 'themes', target: 'theme', kind: 'array' },
+    { field: 'concept_refs', target: 'concept', kind: 'array' },
+    { field: 'related_papers', target: 'paper', kind: 'array' },
+    { field: 'lead', target: 'member', kind: 'scalar' },
+  ];
+  const sessionRefs = [
+    { field: 'lead', target: 'member', kind: 'scalar' },
+    { field: 'participants', target: 'member', kind: 'array' },
+    { field: 'paper_refs', target: 'paper', kind: 'array' },
+    { field: 'themes', target: 'theme', kind: 'array' },
+    { field: 'concept_refs', target: 'concept', kind: 'array' },
+  ];
+
+  scrubDir('src/content/docs/papers', paperRefs);
+  scrubDir('src/content/docs/sessions', sessionRefs);
+
+  // 补救：kept exemplar paper 的 themes 被 scrub 清空后，挂到 example-theme
+  // （init 总会创建）让 fork 打开 /papers/<exemplar>/ 仍能看到知识图样板。
+  rebindExemplarThemeToExample();
+
+  function scrubDir(relDir, refs) {
+    const dir = join(ROOT, relDir);
+    if (!existsSync(dir)) return;
+    for (const name of readdirSync(dir, { withFileTypes: true })) {
+      if (!name.isFile() || !/\.(md|mdx)$/.test(name.name)) continue;
+      if (/^index\.(md|mdx)$/.test(name.name)) continue;
+      const p = join(dir, name.name);
+      const raw = readFileSync(p, 'utf-8');
+      let updated = raw;
+      for (const ref of refs) {
+        updated = filterFrontmatterRef(updated, ref, existingSlugs[ref.target]);
+      }
+      if (updated !== raw && !DRY_RUN) {
+        writeFileSync(p, updated);
+        log(`🧹 scrubbed stale slug_refs in ${relDir}/${name.name}`);
+      }
+    }
+  }
+}
+
+/**
+ * kept exemplar paper 在 scrub 后 themes 可能被清空（原 theme 都是 demo 已删）。
+ * 把它挂到 example-theme（init 总会写一个）避免 verify 的 "paper 没绑定 theme" warn，
+ * 同时让新 fork 打开 /papers/<exemplar>/ 仍能看到知识图 demo。
+ */
+function rebindExemplarThemeToExample() {
+  const papersDir = join(ROOT, 'src/content/docs/papers');
+  if (!existsSync(papersDir)) return;
+  if (!existsSync(join(ROOT, 'src/content/docs/themes/example-theme.md'))) return;
+  for (const name of readdirSync(papersDir, { withFileTypes: true })) {
+    if (!name.isFile() || !/\.(md|mdx)$/.test(name.name)) continue;
+    if (/^index\.(md|mdx)$/.test(name.name)) continue;
+    const p = join(papersDir, name.name);
+    const raw = readFileSync(p, 'utf-8');
+    // 只改 exemplar: true 的
+    if (!/^\s*exemplar:\s*true\s*$/m.test(raw)) continue;
+    // 已有非空 themes 就跳过
+    if (/^themes:\s*\n\s+-\s+\S/m.test(raw) || /^themes:\s*\[\s*[^\]\s]/m.test(raw)) continue;
+    // 找空 themes: [] / themes:\n<无项> 并替换
+    let updated = raw;
+    updated = updated.replace(/^themes:\s*\[\s*\]\s*$/m, `themes:\n  - example-theme`);
+    updated = updated.replace(/^themes:\s*\n(?=(?!\s+-))/m, `themes:\n  - example-theme\n`);
+    if (updated !== raw && !DRY_RUN) {
+      writeFileSync(p, updated);
+      log(`🔗 rebound papers/${name.name} themes → [example-theme]`);
+    }
+  }
+}
+
+/**
+ * 读 src/content/docs/<relDir> 下的 .md/.mdx，返回 basename set（去掉扩展）。
+ * 用于判断 slug 是否仍存在。
+ */
+function listBaseNames(relDir) {
+  const dir = join(ROOT, relDir);
+  const set = new Set();
+  if (!existsSync(dir)) return set;
+  for (const name of readdirSync(dir, { withFileTypes: true })) {
+    if (!name.isFile() || !/\.(md|mdx)$/.test(name.name)) continue;
+    if (/^index\.(md|mdx)$/.test(name.name)) continue;
+    set.add(name.name.replace(/\.(md|mdx)$/, ''));
+  }
+  return set;
+}
+
+/**
+ * 正则改写 frontmatter 中某字段，把不在 existing 集合里的 slug 过滤掉。
+ * - array: 删除列表项（保留空列表 `field: []`）
+ * - scalar: 指向不存在的 slug 置空为 `field: null`
+ *
+ * 只处理 --- fm --- 内部，body 不动。为了避免 YAML 歧义，支持两种列表写法：
+ *   field: [a, b]
+ *   field:
+ *     - a
+ *     - b
+ */
+function filterFrontmatterRef(raw, ref, existing) {
+  const fmMatch = raw.match(/^---\n([\s\S]*?)\n---/);
+  if (!fmMatch) return raw;
+  let fm = fmMatch[1];
+  const { field, target, kind } = ref;
+
+  const isValid = (v) => {
+    // 去掉前缀 `concepts/xxx` → `xxx`
+    const s = String(v).trim().replace(/^\/+|\/+$/g, '').replace(/^([a-z]+?)s?\//, '');
+    return existing.has(s);
+  };
+
+  if (kind === 'scalar') {
+    // field: value
+    const re = new RegExp(`^(${field}:\\s*)(.+)$`, 'm');
+    fm = fm.replace(re, (m, prefix, val) => {
+      const clean = val.trim();
+      if (clean === '' || clean === 'null' || clean === '~') return m;
+      if (isValid(clean.replace(/^['"]|['"]$/g, ''))) return m;
+      return `${prefix}null`;
+    });
+  } else {
+    // flow list  field: [a, b]
+    const flowRe = new RegExp(`^(${field}:\\s*)\\[([^\\]]*)\\]`, 'm');
+    fm = fm.replace(flowRe, (m, prefix, inner) => {
+      const items = inner.split(',').map(s => s.trim()).filter(Boolean);
+      const kept = items.filter(v => isValid(v.replace(/^['"]|['"]$/g, '')));
+      return `${prefix}[${kept.join(', ')}]`;
+    });
+    // block list
+    //   field:
+    //     - a
+    //     - b
+    const blockRe = new RegExp(`^(${field}:\\s*\\n)((?:\\s+-\\s+.+\\n?)+)`, 'm');
+    fm = fm.replace(blockRe, (m, prefix, listBody) => {
+      const kept = listBody
+        .split('\n')
+        .filter(l => l.trim().startsWith('-'))
+        .map(l => ({ raw: l, value: l.replace(/^\s+-\s+/, '').trim().replace(/^['"]|['"]$/g, '') }))
+        .filter(x => isValid(x.value))
+        .map(x => x.raw);
+      if (kept.length === 0) return `${prefix.replace(/\n$/, '')} []\n`;
+      return `${prefix}${kept.join('\n')}\n`;
+    });
+  }
+
+  return raw.replace(fmMatch[0], `---\n${fm}\n---`);
 }
 
 function slugify(s) {
