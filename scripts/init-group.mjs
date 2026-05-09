@@ -226,6 +226,9 @@ description: 一句话定位你这条研究主线。
 sidebar:
   order: 1
   label: <主线名称>
+owner: null
+co_owners: []
+tags: []
 ---
 
 > ⚠️ 模板。复制本文件并改名（\`mv example-theme.md your-theme.md\`），然后填实际内容。

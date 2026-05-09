@@ -81,6 +81,7 @@ function parseScalar(s) {
   const noComment = s.replace(/\s+#.*$/, '').trim();
   if (noComment === 'true') return true;
   if (noComment === 'false') return false;
+  if (noComment === 'null' || noComment === '~' || noComment === '') return null;
   if (/^-?\d+(\.\d+)?$/.test(noComment)) return Number(noComment);
   if ((noComment.startsWith('"') && noComment.endsWith('"')) || (noComment.startsWith("'") && noComment.endsWith("'"))) {
     return noComment.slice(1, -1);

@@ -276,7 +276,8 @@ pnpm verify
 - **#33 scaffold title 默认是 slug 拼接**（`2026-W22 · deepseek-r1-followup`），sidebar 难看。Agent 要 follow-up edit title。建议 cycle-9 给 `new-session.mjs` 加 `--title=` flag。
 - **#34 `context:for` 人读模式不是 markdown**：带 box-drawing 字符（──）+ emoji，复制到"0. 关联背景"段得手改成 `- [Title](/path/)` 列表。建议 cycle-9 加 `--md` flag。
 - **#35 2 跳邻居信噪比低**：MTP 通过 `related_concept(moe)` 间接命中 depth=2，但对"本周共读关联背景"相关度低。实践：`--depth=1` 就够用；只有做 personalized-onboarding 才值得开 depth=2。本 skill 3-bis 已建议 depth=2，dogfood 后改口 —— 默认用 depth=2 拿到 members/2-跳 concepts 可挑 1-2 条放进"可选扩展"，不要一股脑全贴。
-- **#36 知识图反向通路验证**：W22 session 的 `concept_refs: [grpo, moe]` 自动让 `/concepts/grpo/` 和 `/concepts/moe/` 页底部 Backlinks 多一条"W22"。反向链路 ✅（build:index 产出 46 edges，39→46 = +7 符合预期：1 paper + 2 concepts + 1 theme + 1 lead + 2 participants）。
+- **#36 知识图反向通路验证**：W22 session 的 `concept_refs: [grpo, moe]` 自动让 `/concepts/grpo/` 和 `/concepts/moe/` 页底部 Backlinks 多一条"W22"。反向链路 ✅（build:index 产出 42 edges，35→42 = +7 符合预期：1 paper + 2 concepts + 1 theme + 1 lead + 2 participants）。
+  - 🔴 **cycle-8 post-commit 修正**：首次提交里写的是 "39→46 = +7"，跨 cycle 回头复盘时发现 `build-index.mjs` 双向 `related_concepts` 有 dedup bug（mla↔moe / moe↔mtp 各多算 1 条），`parseScalar()` 把 YAML `null` 当字符串 "null"（触发 parent_concept 死链误报）。两个 bug 都已 one-line fix，真实基线是 35 edges（非 39）。数字虚高 4，方向仍对。
 
 ### 7. 演练发现（cycle 5.A · Mixtral W10 演练）
 

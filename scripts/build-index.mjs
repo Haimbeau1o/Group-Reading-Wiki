@@ -177,14 +177,15 @@ function buildEdges(nodes) {
   }
 
   // 双向对等关系：related_concepts / related_papers 自动加反向边
+  // 先把已有边全登记到 existing，再只对缺反向的补齐，避免两边都声明时重复
   const dual = new Set(['related_concept', 'related_paper']);
-  const seen = new Set();
+  const existing = new Set(edges.map(e => `${e.from}|${e.to}|${e.rel}`));
   const original = [...edges];
   for (const e of original) {
     if (!dual.has(e.rel)) continue;
-    const key = `${e.to}|${e.from}|${e.rel}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
+    const reverseKey = `${e.to}|${e.from}|${e.rel}`;
+    if (existing.has(reverseKey)) continue;
+    existing.add(reverseKey);
     edges.push({ from: e.to, to: e.from, rel: e.rel });
   }
 
