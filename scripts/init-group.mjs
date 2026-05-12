@@ -299,6 +299,9 @@ cleanDirHonorExemplar('src/content/docs/sessions/digest');
 // R1 paper note 有 exemplar: true → 默认保留作"什么是好 paper note"样板
 cleanDirHonorExemplar('src/content/docs/papers');
 
+// 4.5.1. 清空 faq/（cycle-10 R01）：保留 exemplar 作"什么是好 FAQ"样板
+cleanDirHonorExemplar('src/content/docs/faq');
+
 // 4.6. 清洗 kept exemplar 的 stale slug_refs（cycle-8+）─────
 // cleanDirHonorExemplar 保留了 exemplar paper，但它的 frontmatter
 // 可能引用已删除的 demo themes/members（cycle-8 verify 的 slug_refs
