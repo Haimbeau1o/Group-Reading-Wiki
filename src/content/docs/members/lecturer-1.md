@@ -14,6 +14,8 @@ research-interests:
 theme_refs:
   - moe-sparsity
   - multimodal
+last_reviewed_at: "2026-05-12"
+reviewer: ""
 ---
 
 > ⚠️ 占位主页。本人请替换 `Lecturer-1` 为真实姓名 + 填实际内容。
