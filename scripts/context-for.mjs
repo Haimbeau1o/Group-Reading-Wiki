@@ -112,7 +112,7 @@ function resolveSlug(raw, g) {
   // 复数 → 单数前缀
   const prefixMap = {
     papers: 'paper', concepts: 'concept', themes: 'theme',
-    members: 'member', sessions: 'session',
+    members: 'member', sessions: 'session', faq: 'faq',
   };
   for (const [plural, singular] of Object.entries(prefixMap)) {
     if (s.startsWith(`${plural}/`)) {
@@ -122,13 +122,13 @@ function resolveSlug(raw, g) {
   }
 
   // 已带 type 前缀
-  if (/^(paper|concept|theme|member|session)\//.test(s)) {
+  if (/^(paper|concept|theme|member|session|faq)\//.test(s)) {
     return g.nodes[s] ? s : null;
   }
 
   // 裸 slug：尝试所有类型
   const candidates = [];
-  for (const t of ['paper', 'concept', 'theme', 'member', 'session']) {
+  for (const t of ['paper', 'concept', 'theme', 'member', 'session', 'faq']) {
     const id = `${t}/${s}`;
     if (g.nodes[id]) candidates.push(id);
   }
@@ -171,9 +171,9 @@ function collectNeighbors(ids, g, visited) {
 
 function groupByType(layer, g) {
   const buckets = {
-    papers: [], concepts: [], themes: [], members: [], sessions: [],
+    papers: [], concepts: [], themes: [], members: [], sessions: [], faq: [],
   };
-  const map = { paper: 'papers', concept: 'concepts', theme: 'themes', member: 'members', session: 'sessions' };
+  const map = { paper: 'papers', concept: 'concepts', theme: 'themes', member: 'members', session: 'sessions', faq: 'faq' };
   for (const item of layer) {
     const node = g.nodes[item.id];
     if (!node) continue;
@@ -220,7 +220,7 @@ function printHuman(r) {
  * --md: 泛用 markdown 输出。agent 可直接贴到任何 markdown 文档。
  */
 function printMarkdown(r) {
-  const TYPE_LABEL = { papers: 'Papers', concepts: 'Concepts', themes: 'Themes', members: 'Members', sessions: 'Sessions' };
+  const TYPE_LABEL = { papers: 'Papers', concepts: 'Concepts', themes: 'Themes', members: 'Members', sessions: 'Sessions', faq: 'FAQ' };
   const c = r.center;
   console.log(`## ${c.title}`);
   console.log('');
