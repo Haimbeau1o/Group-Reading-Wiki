@@ -37,6 +37,7 @@ const URL_PREFIX = {
   theme: '/themes/',
   member: '/members/',
   session: '/sessions/',
+  faq: '/faq/',
 };
 
 /**
@@ -45,7 +46,7 @@ const URL_PREFIX = {
  */
 function collectNodes() {
   const nodes = new Map();
-  const TYPES = ['papers', 'concepts', 'themes', 'members', 'sessions'];
+  const TYPES = ['papers', 'concepts', 'themes', 'members', 'sessions', 'faq'];
 
   for (const type of TYPES) {
     const dir = join(DOCS, type);
@@ -105,6 +106,16 @@ function collectNodes() {
         node.themes = arrayOf(fm.themes);
         node.concept_refs = arrayOf(fm.concept_refs);
         node.status = fm.status || '';
+      } else if (schema === 'faq') {
+        node.question = fm.question || '';
+        node.asked_by = fm.asked_by || null;
+        node.answered_by = fm.answered_by || null;
+        node.related_papers = arrayOf(fm.related_papers);
+        node.related_concepts = arrayOf(fm.related_concepts);
+        node.themes = arrayOf(fm.themes);
+        node.exemplar = fm.exemplar === true;
+        node.last_reviewed_at = fm.last_reviewed_at || null;
+        node.reviewer = fm.reviewer || null;
       }
 
       nodes.set(id, node);
@@ -358,7 +369,7 @@ const by_tag = buildByTag(nodes);
 const nodesObj = Object.fromEntries(nodes);
 
 const stats = {
-  papers: 0, concepts: 0, themes: 0, members: 0, sessions: 0,
+  papers: 0, concepts: 0, themes: 0, members: 0, sessions: 0, faq: 0,
 };
 for (const [, n] of nodes) {
   if (n.type === 'paper') stats.papers++;
@@ -366,6 +377,7 @@ for (const [, n] of nodes) {
   else if (n.type === 'theme') stats.themes++;
   else if (n.type === 'member') stats.members++;
   else if (n.type === 'session') stats.sessions++;
+  else if (n.type === 'faq') stats.faq++;
 }
 
 const graph = {
@@ -390,5 +402,5 @@ if (isJson) {
 } else {
   console.log(`✅ knowledge-graph.json (${edges.length} edges)`);
   console.log(`   ${OUT_FILE}`);
-  console.log(`   nodes: papers=${stats.papers} concepts=${stats.concepts} themes=${stats.themes} members=${stats.members} sessions=${stats.sessions}`);
+  console.log(`   nodes: papers=${stats.papers} concepts=${stats.concepts} themes=${stats.themes} members=${stats.members} sessions=${stats.sessions} faq=${stats.faq}`);
 }
