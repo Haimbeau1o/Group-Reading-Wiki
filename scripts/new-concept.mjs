@@ -47,6 +47,8 @@ const aliases = splitCsv(opts.aliases);
 const relatedConcepts = splitCsv(opts.related);
 const parentConcept = opts.parent || '';
 const tags = splitCsv(opts.tags);
+const reviewer = opts.reviewer || '';
+const today = new Date().toISOString().slice(0, 10);
 const yamlList = (arr) => arr.length ? '\n' + arr.map(s => `  - ${s}`).join('\n') : ' []';
 const yamlSafeQuote = (s) => /[:#&*!|>%@`,\[\]{}"'\\]/.test(s) ? `"${String(s).replace(/"/g, '\\"')}"` : s;
 const yamlListQuoted = (arr) => arr.length ? '\n' + arr.map(s => `  - ${yamlSafeQuote(s)}`).join('\n') : ' []';
@@ -108,6 +110,8 @@ aliases:${yamlListQuoted(aliases)}
 related_concepts:${yamlList(relatedConcepts)}
 parent_concept: ${parentConcept || 'null'}
 tags:${yamlList(tags)}
+last_reviewed_at: "${today}"
+reviewer: ${reviewer ? `"${reviewer}"` : '""'}
 ---
 
 ## 一句话定义

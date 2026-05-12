@@ -45,6 +45,8 @@ const titleLabel = opts['title-label'] || '';
 const theme = opts.theme || '';
 // cluster 默认不填（role-model.md：只有 user 明确 hint 时才写）
 const cluster = opts.cluster || '';
+const reviewer = opts.reviewer || '';
+const today = new Date().toISOString().slice(0, 10);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const outPath = resolve(__dirname, '..', 'src/content/docs/members', `${slug}.md`);
@@ -82,6 +84,8 @@ if (interests.length) {
   lines.push('research-interests:');
   lines.push('  - 待填');
 }
+lines.push(`last_reviewed_at: "${today}"`);
+lines.push(`reviewer: ${reviewer ? `"${reviewer}"` : '""'}`);
 lines.push('---');
 const frontmatter = lines.join('\n');
 
