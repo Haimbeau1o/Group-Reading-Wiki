@@ -83,6 +83,12 @@ export default defineConfig({
           autogenerate: { directory: 'concepts' },
           collapsed: true,
         },
+        {
+          label: '❓ FAQ',
+          translations: { en: 'FAQ' },
+          autogenerate: { directory: 'faq' },
+          collapsed: true,
+        },
       ],
       plugins: [
         giscus({
