@@ -100,7 +100,7 @@ function parseScalar(s) {
 export const SCHEMAS = {
   member: {
     required: ['title', 'role', 'status'],
-    optional: ['cluster', 'year', 'title_label', 'research-interests', 'theme_refs', 'tags'],
+    optional: ['cluster', 'year', 'title_label', 'research-interests', 'theme_refs', 'tags', 'last_reviewed_at', 'reviewer', 'review_cadence'],
     enum: {
       role: ['大导师', '小导师', '博士生', '硕士生'],
       status: ['active', 'alumni', 'visitor'],
@@ -108,11 +108,12 @@ export const SCHEMAS = {
     },
     slug_refs: [
       { field: 'theme_refs', target: 'theme', kind: 'array' },
+      { field: 'reviewer', target: 'member', kind: 'scalar' },
     ],
   },
   session: {
     required: ['title', 'session_week', 'lead', 'status'],
-    optional: ['session_date', 'paper_refs', 'themes', 'participants', 'concept_refs', 'tags'],
+    optional: ['session_date', 'paper_refs', 'themes', 'participants', 'concept_refs', 'tags', 'last_reviewed_at', 'reviewer', 'review_cadence'],
     enum: {
       status: ['upcoming', 'live', 'archived'],
     },
@@ -122,32 +123,36 @@ export const SCHEMAS = {
       { field: 'paper_refs', target: 'paper', kind: 'array' },
       { field: 'themes', target: 'theme', kind: 'array' },
       { field: 'concept_refs', target: 'concept', kind: 'array' },
+      { field: 'reviewer', target: 'member', kind: 'scalar' },
     ],
   },
   paper: {
     required: ['title', 'description'],
-    optional: ['status', 'themes', 'exemplar', 'concept_refs', 'related_papers', 'tags'],
+    optional: ['status', 'themes', 'exemplar', 'concept_refs', 'related_papers', 'tags', 'last_reviewed_at', 'reviewer', 'review_cadence'],
     // exemplar: true → init:group --reset 时保留（作为"好 paper note"的样板）
     slug_refs: [
       { field: 'themes', target: 'theme', kind: 'array' },
       { field: 'concept_refs', target: 'concept', kind: 'array' },
       { field: 'related_papers', target: 'paper', kind: 'array' },
+      { field: 'reviewer', target: 'member', kind: 'scalar' },
     ],
   },
   theme: {
     required: ['title', 'description'],
-    optional: ['owner', 'co_owners', 'tags'],
+    optional: ['owner', 'co_owners', 'tags', 'last_reviewed_at', 'reviewer', 'review_cadence'],
     slug_refs: [
       { field: 'owner', target: 'member', kind: 'scalar' },
       { field: 'co_owners', target: 'member', kind: 'array' },
+      { field: 'reviewer', target: 'member', kind: 'scalar' },
     ],
   },
   concept: {
     required: ['title', 'description'],
-    optional: ['aliases', 'related_concepts', 'parent_concept', 'tags'],
+    optional: ['aliases', 'related_concepts', 'parent_concept', 'tags', 'last_reviewed_at', 'reviewer', 'review_cadence'],
     slug_refs: [
       { field: 'related_concepts', target: 'concept', kind: 'array' },
       { field: 'parent_concept', target: 'concept', kind: 'scalar' },
+      { field: 'reviewer', target: 'member', kind: 'scalar' },
     ],
   },
   faq: {
@@ -159,6 +164,7 @@ export const SCHEMAS = {
       { field: 'related_papers',   target: 'paper',   kind: 'array'  },
       { field: 'related_concepts', target: 'concept', kind: 'array'  },
       { field: 'themes',           target: 'theme',   kind: 'array'  },
+      { field: 'reviewer',         target: 'member',  kind: 'scalar' },
     ],
   },
   generic: {
