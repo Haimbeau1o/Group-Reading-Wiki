@@ -12,6 +12,8 @@ concept_refs:
   - moe
   - mla
   - fp8
+last_reviewed_at: "2026-05-12"
+reviewer: ""
 ---
 
 > 📌 **这是一篇 exemplar paper note** —— 当你 `pnpm init:group` 重置示例内容时，**这篇会被保留** 作为"什么是好的组内 paper note"的样板。如果你的组想保留它就保留；想删掉就在 frontmatter 把 `exemplar: true` 删掉重新跑 init。
