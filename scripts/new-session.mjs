@@ -39,6 +39,7 @@ const opts = Object.fromEntries(
 const lead = opts.lead || '<带读人>';
 const paperRef = opts.paper ? `\n  - /${opts.paper}/` : '';
 const today = new Date().toISOString().slice(0, 10);
+const reviewer = opts.reviewer || '';
 
 // 知识图字段（cycle-8）
 const splitCsv = (v) => (typeof v === 'string' ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
@@ -99,6 +100,8 @@ participants:${yamlList(participants)}
 concept_refs:${yamlList(conceptRefs)}
 tags:${yamlList(tags)}
 status: upcoming
+last_reviewed_at: "${today}"
+reviewer: ${reviewer ? `"${reviewer}"` : '""'}
 ---
 
 > 自动生成的 session 模板。请带读人在周三前完成 Pre-read 部分。

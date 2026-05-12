@@ -46,6 +46,8 @@ const isJson = !!opts.json;
 const splitCsv = (v) => (typeof v === 'string' ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
 const coOwners = splitCsv(opts['co-owners']);
 const tags = splitCsv(opts.tags);
+const reviewer = opts.reviewer || '';
+const today = new Date().toISOString().slice(0, 10);
 const yamlList = (arr) => arr.length ? '\n' + arr.map(s => `  - ${s}`).join('\n') : ' []';
 
 // YAML 安全引号
@@ -82,6 +84,8 @@ sidebar:
 owner: ${owner || 'null'}
 co_owners:${yamlList(coOwners)}
 tags:${yamlList(tags)}
+last_reviewed_at: "${today}"
+reviewer: ${reviewer ? `"${reviewer}"` : '""'}
 ---
 
 ## 一句话定位
