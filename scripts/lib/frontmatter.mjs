@@ -150,6 +150,17 @@ export const SCHEMAS = {
       { field: 'parent_concept', target: 'concept', kind: 'scalar' },
     ],
   },
+  faq: {
+    required: ['title', 'description', 'question', 'answered_by'],
+    optional: ['asked_by', 'related_papers', 'related_concepts', 'themes', 'tags', 'last_reviewed_at', 'reviewer', 'review_cadence', 'exemplar'],
+    slug_refs: [
+      { field: 'answered_by',      target: 'member',  kind: 'scalar' },
+      { field: 'asked_by',         target: 'member',  kind: 'scalar' },
+      { field: 'related_papers',   target: 'paper',   kind: 'array'  },
+      { field: 'related_concepts', target: 'concept', kind: 'array'  },
+      { field: 'themes',           target: 'theme',   kind: 'array'  },
+    ],
+  },
   generic: {
     required: ['title'],
     optional: ['tags'],
@@ -179,5 +190,6 @@ export function detectSchema(relpath) {
   if (relpath.includes('/papers/') && !relpath.endsWith('/index.md')) return 'paper';
   if (relpath.includes('/themes/') && !relpath.endsWith('/index.mdx')) return 'theme';
   if (relpath.includes('/concepts/') && !relpath.endsWith('/index.md')) return 'concept';
+  if (relpath.includes('/faq/') && !relpath.endsWith('/index.md')) return 'faq';
   return 'generic';
 }
