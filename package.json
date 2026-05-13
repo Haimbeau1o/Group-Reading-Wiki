@@ -27,6 +27,7 @@
     "verify": "node scripts/verify.mjs",
     "verify:full": "node scripts/verify.mjs --build",
     "staleness-report": "node scripts/staleness-report.mjs",
+    "audit:touchpoints": "node scripts/audit-touchpoints.mjs",
     "list:members": "node scripts/list.mjs members",
     "list:themes": "node scripts/list.mjs themes",
     "list:sessions": "node scripts/list.mjs sessions",
