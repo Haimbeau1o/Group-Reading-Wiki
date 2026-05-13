@@ -24,6 +24,7 @@
 import { mkdirSync, writeFileSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { yamlSafe, yamlList, splitCsv, today as todayFn } from './lib/scaffold-helpers.mjs';
 
 const args = process.argv.slice(2);
 if (args.length < 1) {
@@ -64,14 +65,10 @@ const label = opts.label || labelDefault;
 const reviewer = opts.reviewer || answeredBy;
 const exemplar = !!opts.exemplar;
 
-const splitCsv = (v) => (typeof v === 'string' ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
 const relatedPapers = splitCsv(opts['related-papers']);
 const relatedConcepts = splitCsv(opts['related-concepts']);
 const themes = splitCsv(opts.themes);
 const tags = splitCsv(opts.tags);
-
-const yamlSafe = (s) => /[:#&*!|>%@`,\[\]{}"'\\]/.test(s) ? `"${String(s).replace(/"/g, '\\"')}"` : s;
-const yamlList = (arr) => arr.length ? '\n' + arr.map(s => `  - ${s}`).join('\n') : ' []';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const faqDir = resolve(__dirname, '..', 'src/content/docs/faq');
@@ -101,7 +98,7 @@ try {
 
 mkdirSync(faqDir, { recursive: true });
 
-const today = new Date().toISOString().slice(0, 10);
+const today = todayFn();
 const titleY = yamlSafe(`${question.slice(0, 60)} · FAQ`);
 const descY = yamlSafe(description);
 const labelY = yamlSafe(label);

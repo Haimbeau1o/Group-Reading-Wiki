@@ -1,6 +1,6 @@
 ---
 debt_id: D03
-status: pending
+status: completed
 estimated_minutes: 60
 depends_on: []
 branch: phase-1-debt/D03-extract-scaffold-helpers

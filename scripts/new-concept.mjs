@@ -20,6 +20,7 @@
 import { mkdirSync, writeFileSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { yamlSafe, yamlList, yamlListQuoted, splitCsv, today as todayFn } from './lib/scaffold-helpers.mjs';
 
 const args = process.argv.slice(2);
 if (args.length < 1) {
@@ -42,19 +43,12 @@ const description = opts.description || `（一句话定义 — 30–50 字）`;
 const linkedPaper = opts.paper || '';
 
 // 知识图字段（cycle-8）
-const splitCsv = (v) => (typeof v === 'string' ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
 const aliases = splitCsv(opts.aliases);
 const relatedConcepts = splitCsv(opts.related);
 const parentConcept = opts.parent || '';
 const tags = splitCsv(opts.tags);
 const reviewer = opts.reviewer || '';
-const today = new Date().toISOString().slice(0, 10);
-const yamlList = (arr) => arr.length ? '\n' + arr.map(s => `  - ${s}`).join('\n') : ' []';
-const yamlSafeQuote = (s) => /[:#&*!|>%@`,\[\]{}"'\\]/.test(s) ? `"${String(s).replace(/"/g, '\\"')}"` : s;
-const yamlListQuoted = (arr) => arr.length ? '\n' + arr.map(s => `  - ${yamlSafeQuote(s)}`).join('\n') : ' []';
-
-// YAML 安全引号
-const yamlSafe = (s) => /[:#&*!|>%@`,\[\]{}"'\\]/.test(s) ? `"${String(s).replace(/"/g, '\\"')}"` : s;
+const today = todayFn();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const conceptsDir = resolve(__dirname, '..', 'src/content/docs/concepts');
