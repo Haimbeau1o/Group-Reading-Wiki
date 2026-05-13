@@ -37,7 +37,7 @@ const opts = Object.fromEntries(
 );
 
 const lead = opts.lead || '<带读人>';
-const paperRef = opts.paper ? `\n  - /${opts.paper}/` : '';
+const paperRef = opts.paper ? `\n  - /${opts.paper}/` : ' []';
 const today = new Date().toISOString().slice(0, 10);
 const reviewer = opts.reviewer || '';
 

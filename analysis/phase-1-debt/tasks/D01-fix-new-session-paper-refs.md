@@ -1,6 +1,6 @@
 ---
 debt_id: D01
-status: pending
+status: completed
 estimated_minutes: 30
 depends_on: []
 branch: phase-1-debt/D01-fix-new-session-paper-refs
