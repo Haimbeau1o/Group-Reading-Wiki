@@ -28,6 +28,7 @@
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { yamlSafe, yamlList, splitCsv, today as todayFn } from './lib/scaffold-helpers.mjs';
 
 const args = process.argv.slice(2);
 if (args.length < 1) {
@@ -48,18 +49,12 @@ const arxivId = opts.arxiv || '';
 const theme = opts.theme || '';
 const lead = opts.lead || '';
 const reviewer = opts.reviewer || '';
-const today = new Date().toISOString().slice(0, 10);
+const today = todayFn();
 
 // 知识图字段（cycle-8）— 逗号分隔
-const splitCsv = (v) => (typeof v === 'string' ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
 const conceptRefs = splitCsv(opts['concept-refs']);
 const relatedPapers = splitCsv(opts['related-papers']);
 const tags = splitCsv(opts.tags);
-
-const yamlList = (arr) => arr.length ? '\n' + arr.map(s => `  - ${s}`).join('\n') : ' []';
-
-// YAML 安全引号
-const yamlSafe = (s) => /[:#&*!|>%@`,\[\]{}"'\\]/.test(s) ? `"${String(s).replace(/"/g, '\\"')}"` : s;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const outPath = resolve(__dirname, '..', 'src/content/docs/papers', `${slug}.md`);

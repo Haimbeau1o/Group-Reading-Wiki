@@ -18,6 +18,7 @@
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { yamlSafe, yamlList, splitCsv, today as todayFn } from './lib/scaffold-helpers.mjs';
 
 const args = process.argv.slice(2);
 const positional = args.filter(a => !a.startsWith('--'));
@@ -43,18 +44,10 @@ const owner = opts.owner || '';
 const isJson = !!opts.json;
 
 // 知识图字段（cycle-8）
-const splitCsv = (v) => (typeof v === 'string' ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
 const coOwners = splitCsv(opts['co-owners']);
 const tags = splitCsv(opts.tags);
 const reviewer = opts.reviewer || '';
-const today = new Date().toISOString().slice(0, 10);
-const yamlList = (arr) => arr.length ? '\n' + arr.map(s => `  - ${s}`).join('\n') : ' []';
-
-// YAML 安全引号
-const yamlSafe = (s) =>
-  /[:#&*!|>%@`,\[\]{}"'\\]/.test(s)
-    ? `"${String(s).replace(/"/g, '\\"')}"`
-    : s;
+const today = todayFn();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
