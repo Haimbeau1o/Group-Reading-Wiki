@@ -956,6 +956,7 @@ function sanitizeKeptExemplarRefs() {
     concept: listBaseNames('src/content/docs/concepts'),
     paper: listBaseNames('src/content/docs/papers'),
     session: listBaseNames('src/content/docs/sessions'),
+    faq: listBaseNames('src/content/docs/faq'),
   };
 
   // (field, target) — 与 frontmatter.mjs schemaRegistry 保持一致
@@ -972,13 +973,27 @@ function sanitizeKeptExemplarRefs() {
     { field: 'themes', target: 'theme', kind: 'array' },
     { field: 'concept_refs', target: 'concept', kind: 'array' },
   ];
+  // cycle-10 R01: faq schema has 6 slug_refs (5 scalar/array + reviewer)
+  const faqRefs = [
+    { field: 'answered_by', target: 'member', kind: 'scalar' },
+    { field: 'asked_by', target: 'member', kind: 'scalar' },
+    { field: 'related_papers', target: 'paper', kind: 'array' },
+    { field: 'related_concepts', target: 'concept', kind: 'array' },
+    { field: 'themes', target: 'theme', kind: 'array' },
+    { field: 'reviewer', target: 'member', kind: 'scalar' },
+  ];
 
   scrubDir('src/content/docs/papers', paperRefs);
   scrubDir('src/content/docs/sessions', sessionRefs);
+  scrubDir('src/content/docs/faq', faqRefs);
 
   // 补救：kept exemplar paper 的 themes 被 scrub 清空后，挂到 example-theme
   // （init 总会创建）让 fork 打开 /papers/<exemplar>/ 仍能看到知识图样板。
   rebindExemplarThemeToExample();
+
+  // cycle-10 R01: kept exemplar faq 的 answered_by (required!) 被 scrub
+  // 设 null 后会让 verify "missing required" 失败。挂到 init 必建的 pi member。
+  rebindExemplarFaqRequiredFields();
 
   function scrubDir(relDir, refs) {
     const dir = join(ROOT, relDir);
@@ -1025,6 +1040,61 @@ function rebindExemplarThemeToExample() {
     if (updated !== raw && !DRY_RUN) {
       writeFileSync(p, updated);
       log(`🔗 rebound papers/${name.name} themes → [example-theme]`);
+    }
+  }
+}
+
+/**
+ * cycle-10 R01: faq.answered_by 是 required 字段。scrub 后若变 null，
+ * 会让 verify "missing required: answered_by" 失败。挂到 init 必建的
+ * pi member（leon → pi 重命名见 §2 清成员段）；如果用 --keep-members
+ * 则 leon 仍存在直接用之。
+ *
+ * 同时把空 themes 挂到 example-theme（init 必建）让知识图样板可见。
+ * reviewer 是 optional，scrub null → 改为 "" 让 yaml 干净。
+ */
+function rebindExemplarFaqRequiredFields() {
+  const faqDir = join(ROOT, 'src/content/docs/faq');
+  if (!existsSync(faqDir)) return;
+
+  // Pick a fallback member: prefer pi (init default), fallback to leon (--keep-members),
+  // last resort first member alphabetically.
+  const membersDir = join(ROOT, 'src/content/docs/members');
+  let fallbackMember = null;
+  if (existsSync(membersDir)) {
+    const members = readdirSync(membersDir)
+      .filter(f => /\.md$/.test(f) && f !== 'index.md' && f !== 'index.mdx')
+      .map(f => f.replace(/\.md$/, ''))
+      .sort();
+    if (members.includes('pi')) fallbackMember = 'pi';
+    else if (members.includes('leon')) fallbackMember = 'leon';
+    else if (members.length > 0) fallbackMember = members[0];
+  }
+  if (!fallbackMember) return;
+
+  const hasExampleTheme = existsSync(join(ROOT, 'src/content/docs/themes/example-theme.md'));
+
+  for (const name of readdirSync(faqDir, { withFileTypes: true })) {
+    if (!name.isFile() || !/\.(md|mdx)$/.test(name.name)) continue;
+    if (/^index\.(md|mdx)$/.test(name.name)) continue;
+    const p = join(faqDir, name.name);
+    const raw = readFileSync(p, 'utf-8');
+    if (!/^\s*exemplar:\s*true\s*$/m.test(raw)) continue;
+
+    let updated = raw;
+    // answered_by (required) → fallback member
+    updated = updated.replace(/^answered_by:\s*null\s*$/m, `answered_by: ${fallbackMember}`);
+    // reviewer (optional) null → "" (兼容 yaml 空字符串)
+    updated = updated.replace(/^reviewer:\s*null\s*$/m, `reviewer: ""`);
+    // themes flow / block 空 → example-theme（若存在）
+    if (hasExampleTheme) {
+      updated = updated.replace(/^themes:\s*\[\s*\]\s*$/m, `themes:\n  - example-theme`);
+      updated = updated.replace(/^themes:\s*\n(?=(?!\s+-))/m, `themes:\n  - example-theme\n`);
+    }
+
+    if (updated !== raw && !DRY_RUN) {
+      writeFileSync(p, updated);
+      log(`🔗 rebound faq/${name.name} (answered_by=${fallbackMember}${hasExampleTheme ? ', themes=[example-theme]' : ''})`);
     }
   }
 }
