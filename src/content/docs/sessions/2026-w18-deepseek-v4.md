@@ -14,6 +14,8 @@ paper_refs: []
 themes:
   - long-context
 status: live   # upcoming / live / archived
+last_reviewed_at: "2026-05-12"
+reviewer: ""
 ---
 
 > ⚠️ **占位 session**。实际带读时由带读人替换为真实内容。结构作为模板使用。

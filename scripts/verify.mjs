@@ -49,7 +49,7 @@ function walk(dir) {
 const files = walk(DOCS);
 
 // 收集每类的 slug 集合，给 slug_refs 死链检查用
-const slugsByType = { paper: new Set(), concept: new Set(), theme: new Set(), member: new Set(), session: new Set() };
+const slugsByType = { paper: new Set(), concept: new Set(), theme: new Set(), member: new Set(), session: new Set(), faq: new Set() };
 for (const f of files) {
   const rel = relative(ROOT, f);
   const schema = detectSchema(rel);
@@ -112,8 +112,10 @@ for (const f of files) {
         ? (Array.isArray(value) ? value : [value])
         : [value];
       for (const v of values) {
+        // FAQ asked_by 允许字面量 "guest"（外部访客提问，不对应 member）
+        if (ref.field === 'asked_by' && String(v).trim() === 'guest') continue;
         const slug = String(v).trim().replace(/^\/+|\/+$/g, '')
-          .replace(/^(papers|concepts|themes|members|sessions)\//, '');
+          .replace(/^(papers|concepts|themes|members|sessions|faq)\//, '');
         if (!slug) continue;
         if (!targetSet.has(slug)) {
           log('error', rel, `[graph] ${ref.field} → ${ref.target}/${slug} 不存在`);

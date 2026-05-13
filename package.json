@@ -20,16 +20,19 @@
     "new:member": "node scripts/new-member.mjs",
     "new:theme": "node scripts/new-theme.mjs",
     "new:concept": "node scripts/new-concept.mjs",
+    "new:faq": "node scripts/new-faq.mjs",
     "init:group": "node scripts/init-group.mjs",
     "update:group-config": "node scripts/update-group-config.mjs",
     "smoke-test:fork": "node scripts/smoke-test-fork.mjs",
     "verify": "node scripts/verify.mjs",
     "verify:full": "node scripts/verify.mjs --build",
+    "staleness-report": "node scripts/staleness-report.mjs",
     "list:members": "node scripts/list.mjs members",
     "list:themes": "node scripts/list.mjs themes",
     "list:sessions": "node scripts/list.mjs sessions",
     "list:papers": "node scripts/list.mjs papers",
-    "list:concepts": "node scripts/list.mjs concepts"
+    "list:concepts": "node scripts/list.mjs concepts",
+    "list:faq": "node scripts/list.mjs faq"
   },
   "packageManager": "pnpm@10.33.0",
   "dependencies": {

@@ -10,6 +10,8 @@ co_owners:
 tags:
   - vision
   - alignment
+last_reviewed_at: "2026-05-12"
+reviewer: ""
 ---
 
 > ⚠️ **占位内容**。该方向 owner 请来填。

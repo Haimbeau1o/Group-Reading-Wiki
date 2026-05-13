@@ -18,6 +18,8 @@ participants:
   - phd-mid-2
   - ms-research-1
 status: archived
+last_reviewed_at: "2026-05-12"
+reviewer: ""
 ---
 
 > 本次共读由 [@phd-senior-1](/members/phd-senior-1/) 带读，关联主线 [Test-time Reasoning](/themes/test-time-reasoning/)。

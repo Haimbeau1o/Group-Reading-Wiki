@@ -20,6 +20,8 @@ tags:
   - rl
   - reasoning
 status: upcoming
+last_reviewed_at: "2026-05-12"
+reviewer: ""
 ---
 
 > 自动生成的 session 模板。请带读人在周三前完成 Pre-read 部分。

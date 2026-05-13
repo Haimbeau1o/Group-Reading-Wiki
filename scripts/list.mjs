@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * pnpm list:<members|themes|sessions|papers|concepts> [--json] [--since=<Nd>] [--theme=<slug>] [--role=<role>] [--source=mtime|git] [--status=A|M|R]
+ * pnpm list:<members|themes|sessions|papers|concepts|faq> [--json] [--since=<Nd>] [--theme=<slug>] [--role=<role>] [--source=mtime|git] [--status=A|M|R]
  *
  * 让 agent 能 introspect 仓库当前状态。
  *
@@ -32,8 +32,8 @@ const opts = Object.fromEntries(
   })
 );
 
-if (!['members', 'themes', 'sessions', 'papers', 'concepts'].includes(subcommand)) {
-  console.error('Usage: pnpm list:<members|themes|sessions|papers|concepts> [--json] [--since=<Nd>] [--theme=<slug>] [--role=<role>]');
+if (!['members', 'themes', 'sessions', 'papers', 'concepts', 'faq'].includes(subcommand)) {
+  console.error('Usage: pnpm list:<members|themes|sessions|papers|concepts|faq> [--json] [--since=<Nd>] [--theme=<slug>] [--role=<role>]');
   process.exit(1);
 }
 

@@ -47,6 +47,8 @@ const isJson = !!opts.json;
 const arxivId = opts.arxiv || '';
 const theme = opts.theme || '';
 const lead = opts.lead || '';
+const reviewer = opts.reviewer || '';
+const today = new Date().toISOString().slice(0, 10);
 
 // 知识图字段（cycle-8）— 逗号分隔
 const splitCsv = (v) => (typeof v === 'string' ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
@@ -209,6 +211,8 @@ ${theme ? `themes:\n  - ${theme}\n` : ''}${lead ? `lead: ${lead}\n` : ''}status:
 ${usedArxiv ? `arxiv: ${arxivId}\n` : ''}concept_refs:${yamlList(conceptRefs)}
 related_papers:${yamlList(relatedPapers)}
 tags:${yamlList(tags)}
+last_reviewed_at: "${today}"
+reviewer: ${reviewer ? `"${reviewer}"` : '""'}
 ---
 
 ${usedArxiv ? '' : '> ⚠️ Draft。请贡献者填充。\n'}
