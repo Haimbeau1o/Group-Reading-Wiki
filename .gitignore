@@ -23,3 +23,7 @@ pnpm-debug.log*
 !.vscode/launch.json
 .idea/
 src/generated/
+
+# Ralph loop runtime
+.ralph/runs/
+.ralph-stop

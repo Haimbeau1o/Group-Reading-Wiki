@@ -32,7 +32,9 @@
     "list:sessions": "node scripts/list.mjs sessions",
     "list:papers": "node scripts/list.mjs papers",
     "list:concepts": "node scripts/list.mjs concepts",
-    "list:faq": "node scripts/list.mjs faq"
+    "list:faq": "node scripts/list.mjs faq",
+    "loop": "bash scripts/ralph/loop.sh",
+    "loop:dry": "bash scripts/ralph/loop.sh --dry-run"
   },
   "packageManager": "pnpm@10.33.0",
   "dependencies": {
