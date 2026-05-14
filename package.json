@@ -27,12 +27,15 @@
     "verify": "node scripts/verify.mjs",
     "verify:full": "node scripts/verify.mjs --build",
     "staleness-report": "node scripts/staleness-report.mjs",
+    "audit:touchpoints": "node scripts/audit-touchpoints.mjs",
     "list:members": "node scripts/list.mjs members",
     "list:themes": "node scripts/list.mjs themes",
     "list:sessions": "node scripts/list.mjs sessions",
     "list:papers": "node scripts/list.mjs papers",
     "list:concepts": "node scripts/list.mjs concepts",
-    "list:faq": "node scripts/list.mjs faq"
+    "list:faq": "node scripts/list.mjs faq",
+    "loop": "bash scripts/ralph/loop.sh",
+    "loop:dry": "bash scripts/ralph/loop.sh --dry-run"
   },
   "packageManager": "pnpm@10.33.0",
   "dependencies": {

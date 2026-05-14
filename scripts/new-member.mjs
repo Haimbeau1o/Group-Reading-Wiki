@@ -20,6 +20,7 @@
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { today as todayFn } from './lib/scaffold-helpers.mjs';
 
 const args = process.argv.slice(2);
 if (args.length < 1) {
@@ -46,7 +47,7 @@ const theme = opts.theme || '';
 // cluster 默认不填（role-model.md：只有 user 明确 hint 时才写）
 const cluster = opts.cluster || '';
 const reviewer = opts.reviewer || '';
-const today = new Date().toISOString().slice(0, 10);
+const today = todayFn();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const outPath = resolve(__dirname, '..', 'src/content/docs/members', `${slug}.md`);

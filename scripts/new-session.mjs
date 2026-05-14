@@ -20,6 +20,7 @@
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { yamlSafe, yamlList, splitCsv, today as todayFn } from './lib/scaffold-helpers.mjs';
 
 const args = process.argv.slice(2);
 if (args.length < 2) {
@@ -37,16 +38,14 @@ const opts = Object.fromEntries(
 );
 
 const lead = opts.lead || '<带读人>';
-const paperRef = opts.paper ? `\n  - /${opts.paper}/` : '';
-const today = new Date().toISOString().slice(0, 10);
+const paperRef = opts.paper ? `\n  - /${opts.paper}/` : ' []';
+const today = todayFn();
 const reviewer = opts.reviewer || '';
 
 // 知识图字段（cycle-8）
-const splitCsv = (v) => (typeof v === 'string' ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
 const participants = splitCsv(opts.participants);
 const conceptRefs = splitCsv(opts['concept-refs']);
 const tags = splitCsv(opts.tags);
-const yamlList = (arr) => arr.length ? '\n' + arr.map(s => `  - ${s}`).join('\n') : ' []';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -73,7 +72,6 @@ if (themes.length === 0 && opts.paper) {
   }
 }
 
-const yamlSafe = (s) => /[:#&*!|>%@`,\[\]{}"'\\]/.test(s) ? `"${String(s).replace(/"/g, '\\"')}"` : s;
 const titleY = yamlSafe(opts.title || `${week} · ${slug}`);
 const descY = yamlSafe(`${week} 周会共读。带读人：${lead}。`);
 
